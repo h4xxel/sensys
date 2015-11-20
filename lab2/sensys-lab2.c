@@ -15,10 +15,13 @@
 #define G 9.81
 #define DT (1.0/SAMPRATE)
 
+
+//Calibrate for when board is stationary on surface
 #define BIASX 1.3873873874
 #define BIASY -0.4459459459
 
-#define THRESHOLD 1.6
+#define STARTTHRESHOLD -1.6
+#define STOPTHRESHOLD 3.0
 
 int open_serial(const char *file, speed_t baudrate){
 	struct termios config;
@@ -92,7 +95,6 @@ int main(int argc, char **argv) {
 	double velx = 0, vely = 0;
 	double posx = 0, posy = 0;
 	double accx, accy;
-	double biasx = 0, biasy = 0;
 	
 	enum {
 		STATE_IDLE,
@@ -108,10 +110,6 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Error: could not open serial port\n");
 		return 1;
 	}
-	
-	//write(serial, "\r\n", 2);
-	//read(serial, buf, 2);
-	
 	
 	serial_puts(serial, "AT+OSX=3\r\n");
 	serial_puts(serial, "AT+OSR=" STR(SAMPRATE) "\r\n"); //120 Hz sample rate
@@ -129,7 +127,8 @@ int main(int argc, char **argv) {
 		switch(state) {
 			case STATE_IDLE:
 				velx = vely = posx = posy = 0;
-				if(accy < -THRESHOLD) {
+
+				if(accy < STARTTHRESHOLD) {
 					printf("Starting measurement!\n");
 					state = STATE_MEASURING;
 				}
@@ -140,7 +139,7 @@ int main(int argc, char **argv) {
 				posx += velx*DT;
 				posy += vely*DT;
 				
-				if(accy > THRESHOLD) {
+				if(accy > STOPTHRESHOLD) {
 					printf("Ending measurement!\n");
 					printf("Distance: %lf m\n", -posy);
 					state = STATE_IDLE;
