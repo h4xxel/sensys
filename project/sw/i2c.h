@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-void i2c_init(void);
-uint8_t i2c_read_reg(uint8_t slave_sub_adr);
-void i2c_write_reg(uint8_t slave_sub_adr, uint8_t data);
+void i2c_init(int frequency_khz);
+uint8_t i2c_read_reg(uint8_t slave, uint8_t reg);
+void i2c_write_reg(uint8_t slave, uint8_t reg, uint8_t data);
 
 #endif

@@ -45,44 +45,45 @@ void i2c_init(int frequency_khz) {
 }
 
 void i2c_start() {
-	LPC_I2C->CONSET		|= (1<<5);	//Send START flag (S). I2C interface is set to master mode. (15.7.1)
+	LPC_I2C->CONCLR = 0x8;
+	LPC_I2C->CONSET		= (1<<5);	//Send START flag (S). I2C interface is set to master mode. (15.7.1)
 	while ((LPC_I2C->STAT & 0xF8) != 0x08);	//Waiting for start-sent state (0x08). We ignore reserved and 0-bits.
 	LPC_I2C->CONCLR		= 0x28;		//clears START flag (bit) and Serial Interrupt bit (SI) (15.7.6)
 }
 
 void i2c_restart() {
-	LPC_I2C->CONSET		|= (1<<5);	//Send START flag (S). I2C interface is set to master mode. (15.7.1)
+	LPC_I2C->CONCLR = 0x8;
+	LPC_I2C->CONSET		= (1<<5);	//Send START flag (S). I2C interface is set to master mode. (15.7.1)
 	while ((LPC_I2C->STAT & 0xF8) != 0x10);	//Waiting for start-sent state (0x08). We ignore reserved and 0-bits.
 	LPC_I2C->CONCLR		= 0x20;		//clears START flag
 }
 
 void i2c_stop() {
+	LPC_I2C->CONSET		= (1<<4);	//Send STOP flag (P). Bit cleared when detected on bus. (15.7.1)
 	LPC_I2C->CONCLR		= (1<<3);	//Clear SI (15.7.6)
-	LPC_I2C->CONSET		|= (1<<4);	//Send STOP flag (P). Bit cleared when detected on bus. (15.7.1)
-	while(LPC_I2C->CONSET & (1<<3));
-	LPC_I2C->CONCLR		= (1<<3);
+	while(LPC_I2C->CONSET & (1<<4));
 }
 
 I2CStatus i2c_write(uint8_t byte) {
 	LPC_I2C->CONCLR		= (1<<3);	//Clear SI (15.7.6)
 	LPC_I2C->DAT = byte;	//Send slave address (SLA) 7 bits + data direction bit (W: 0, R: 1) (15.7.3)
 	while(LPC_I2C->CONSET & (1<<3));
-	switch(LPC_I2C->STAT & 0xF8) {
-		case 0x18:
-		case 0x40:
-			return I2C_STATUS_ACK;
-		
-		case 0x20:
-		case 0x48:
-			return I2C_STATUS_NACK;
-		
-		default:
-			return I2C_STATUS_ERR;
+	for(;;) {
+		switch(LPC_I2C->STAT & 0xF8) {
+			case 0x18:
+			case 0x40:
+			case 0x28:
+				return I2C_STATUS_ACK;
+			
+			case 0x20:
+			case 0x48:
+			case 0x30:
+				return I2C_STATUS_NACK;
+			
+			case 0x38:
+				return I2C_STATUS_ERR;
+		}
 	}
-	/*if (temp == 0x18)	break; 	// (SLA+W) sent, ACKed.
-		else if (temp == 0x20)	break; 	// (SLA+W) sent, NACKed.
-		else if (temp == 0x38)	break; 	// (SLA+W) sent, arbitration lost.
-	}*/
 }
 
 void i2c_write_reg(uint8_t slave, uint8_t reg, uint8_t data) {
@@ -97,15 +98,18 @@ uint8_t i2c_read(I2CStatus ack) {
 	int temp;
 	
 	if(ack == I2C_STATUS_ACK)
-		LPC_I2C->CONCLR = 0x4;
-	else
 		LPC_I2C->CONSET = 0x4;
+	else
+		LPC_I2C->CONCLR = 0x4;
 	
 	LPC_I2C->CONCLR = 0x8;	//Clear SI (15.7.6)
 	while(1) {
 		temp = (LPC_I2C->STAT & 0xF8);
-		if (temp == 0x50)	break;	// DATA (sub-adr value) received, ACK sent.
-		else if (temp == 0x58)	break;	// DATA (sub-adr value) received, NACK sent.
+		if (temp == 0x50) {
+			break;	// DATA (sub-adr value) received, ACK sent.
+		} else if (temp == 0x58){
+			break;	// DATA (sub-adr value) received, NACK sent.
+		}
 	}
 	
 	return LPC_I2C->DAT;
@@ -114,10 +118,12 @@ uint8_t i2c_read(I2CStatus ack) {
 uint8_t i2c_read_reg(uint8_t slave, uint8_t reg) {
 	uint8_t data;
 	i2c_start();
-	i2c_write((slave << 1) | 0x1);
+	i2c_write(slave << 1);
 	i2c_write(reg);
 	i2c_restart();
+	i2c_write((slave << 1) | 0x1);
 	data = i2c_read(I2C_STATUS_NACK);
 	i2c_stop();
 	return data;
 }
+

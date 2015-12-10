@@ -42,8 +42,8 @@ void initialize(void) {
 	
 	/*Disable systick*/
 	SysTick->CTRL = 0;
-	
-	i2c_init();
+	util_delay(100000);
+	i2c_init(100);
 	uart_printf("i2c_init() done\n");
 	radiolink_init(16);
 	uart_printf("radiolink_init() done\n");
@@ -62,9 +62,12 @@ void systick_enable() {
 
 int main(int ram, char **argv) {
 	initialize();
-	util_delay(200000);
 	uart_printf("Up and running!\n");
 	systick_enable();
+	
+	//i2c_lol();
+	
+	uart_printf("%hhu is value from accel\n", i2c_read_reg(0x68, 117));
 	
 	for(;;) {
 		
