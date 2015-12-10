@@ -308,7 +308,7 @@ Text Label 16850 9700 0    60   ~ 0
 MISO
 Text Label 16850 9800 0    60   ~ 0
 MOSI
-Text Label 16850 9900 0    60   ~ 0
+Text Label 16850 9500 0    60   ~ 0
 SCK
 Text Label 20150 10800 0    60   ~ 0
 RADIO_CE
