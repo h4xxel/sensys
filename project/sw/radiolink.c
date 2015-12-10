@@ -15,10 +15,10 @@
 #include "main.h"
 #include "util.h"
 
-#define CSN_PORT LPC_GPIO1
-#define CE_PORT LPC_GPIO1
-#define CSN_PIN (1 << 9)
-#define CE_PIN (1 << 8)
+#define CSN_PORT LPC_GPIO2
+#define CE_PORT LPC_GPIO2
+#define CSN_PIN (1 << 10)
+#define CE_PIN (1 << 2)
 
 #define DELAY 5
 static int radio_used_flag = 0;
