@@ -1,0 +1,6 @@
+(fp_lib_table
+  (lib (name jtag-edge)(type KiCad)(uri "$(KIPRJMOD)/jtag-edge.pretty")(options "")(descr ""))
+  (lib (name lga5x1)(type KiCad)(uri "$(KIPRJMOD)/lga5x1.pretty")(options "")(descr ""))
+  (lib (name lga5x2)(type KiCad)(uri "$(KIPRJMOD)/lga5x2.pretty")(options "")(descr ""))
+  (lib (name happecloud)(type Legacy)(uri "$(KIPRJMOD)/happecloud.mod")(options "")(descr ""))
+)
