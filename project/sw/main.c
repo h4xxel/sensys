@@ -66,8 +66,11 @@ int main(int ram, char **argv) {
 	systick_enable();
 	
 	//i2c_lol();
-	
-	uart_printf("%hhu is value from accel\n", i2c_read_reg(0x68, 117));
+
+	LPC_GPIO0->DIR |= (1 << 3); // GPIO0_3 = IMUA0
+	LPC_GPIO0->MASKED_ACCESS[(1 << 3)] = 0;	// Set A0 to 0 => addresses below should be valid
+	uart_printf("0x%X is value from accel (should be 0x41)\n", i2c_read_reg(0x1E, 0xF));
+	uart_printf("0x%X is value from gyro (should be 0xF)\n", i2c_read_reg(0x68, 0x0));
 	
 	for(;;) {
 		
