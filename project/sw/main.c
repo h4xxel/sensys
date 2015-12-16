@@ -65,9 +65,7 @@ int main(int ram, char **argv) {
 	uart_printf("Up and running!\n");
 	systick_enable();
 	
-	//i2c_lol();
-	
-	uart_printf("%hhu is value from accel\n", i2c_read_reg(0x68, 117));
+	//uart_printf("%hhu is value from accel\n", i2c_read_reg(0x68, 117));
 	
 	for(;;) {
 		
