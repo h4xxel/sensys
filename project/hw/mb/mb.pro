@@ -1,4 +1,4 @@
-update=tor 10 dec 2015 17:10:10
+update=fre 11 dec 2015 15:00:39
 version=1
 last_client=kicad
 [pcbnew]
@@ -23,6 +23,8 @@ ModuleOutlineThickness=0.150000000000
 [cvpcb]
 version=1
 NetIExt=net
+[general]
+version=1
 [eeschema]
 version=1
 LibDir=lib
@@ -57,5 +59,4 @@ LibName27=atmel
 LibName28=contrib
 LibName29=valves
 LibName30=lib/LPC1114
-[general]
-version=1
+LibName31=lib/mcp1700
