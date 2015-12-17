@@ -1,0 +1,7 @@
+*.o
+*.elf
+*.hex
+*.orig
+*.remote
+*.local
+pi
