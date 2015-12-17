@@ -6,18 +6,6 @@
 #include "util.h"
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
-#define PRINT_TYPE(type, argtype) \
-s = int_to_string((type) va_arg(va, argtype), buf + 24, base); \
-j = 24 + buf - s; \
-if(!width) \
-	width = j; \
-else \
-	while(width > j)  {\
-		uart_send_char(pad); \
-		width--; \
-	} \
-uart_send_raw((unsigned char *) s, width)
-
 
 void uart_init() {
 	unsigned int regval;
@@ -98,13 +86,12 @@ static char *int_to_string(unsigned long long int n, char *s, int base) {
 	return s;
 }
 
-int uart_printf(char *format, ...) {
-	#ifdef DEBUG
-	//TODO: handle signed values
+int uart_vprintf(char *format, va_list va) {
 	unsigned char pad, c;
 	int i;
 	unsigned int j;
-	va_list va;
+	unsigned long long int num = 0;
+	signed long long int signum = 0;
 	
 	enum {
 		LENGTH_CHAR,
@@ -121,7 +108,6 @@ int uart_printf(char *format, ...) {
 	char buf[25];
 	buf[24] = 0;
 	
-	va_start(va, format);
 	for(i=0; (c = *format++); i++) {
 		if(c != '%') {
 			uart_send_char(c);
@@ -131,6 +117,7 @@ int uart_printf(char *format, ...) {
 		width = 0;
 		prefix = 0;
 		pad = ' ';
+		base = 10;
 		
 		while(1) {
 			switch(c = *format++) {
@@ -179,46 +166,90 @@ int uart_printf(char *format, ...) {
 					base = 16;
 					if(prefix)
 						uart_send_string("0x");
-					goto baseconv;
 				case 'u':
-				case 'd':
-				case 'i':
-					base = 10;
 					baseconv:
 					switch(length) {
 						case LENGTH_CHAR:
-							PRINT_TYPE(unsigned char, unsigned int);
+							num = (unsigned char) va_arg(va, unsigned int);
 							break;
 						case LENGTH_SHORT:
-							PRINT_TYPE(unsigned short, unsigned int);
+							num = (unsigned short) va_arg(va, unsigned int);
 							break;
 						case LENGTH_INT:
-							PRINT_TYPE(unsigned int, unsigned int);
+							num = (unsigned int) va_arg(va, unsigned int);
 							break;
 						case LENGTH_LONG:
-							PRINT_TYPE(unsigned long, unsigned long);
+							num = (unsigned long) va_arg(va, unsigned long);
 							break;
 						case LENGTH_LONG_LONG:
-							PRINT_TYPE(unsigned long long, unsigned long long);
+							num = (unsigned long long) va_arg(va, unsigned long long);
 							break;
 						default:
 							break;
 					}
-					goto next;
+					goto print_num;
+				case 'd':
+				case 'i':
+					switch(length) {
+						case LENGTH_CHAR:
+							signum = (signed char) va_arg(va, signed int);
+							break;
+						case LENGTH_SHORT:
+							signum = (signed short) va_arg(va, signed int);
+							break;
+						case LENGTH_INT:
+							signum = (signed int) va_arg(va, signed int);
+							break;
+						case LENGTH_LONG:
+							signum = (signed long) va_arg(va, signed long);
+							break;
+						case LENGTH_LONG_LONG:
+							signum = (signed long long) va_arg(va, signed long long);
+							break;
+						default:
+							break;
+					}
+					if(signum < 0) {
+						uart_send_char('-');
+						num = -signum;
+					} else
+						num = signum;
+					goto print_num;
 				case 's':
 					uart_send_string(va_arg(va, char *));
 					goto next;
+				case 'c':
+					uart_send_char((char) va_arg(va, int));
+					goto next;
 			}
 		}
+		print_num:
+		s = int_to_string(num, buf + 24, base);
+		j = 24 + buf - s;
+		if(!width)
+			width = j;
+		else
+			while(width > j)  {
+				uart_send_char(pad);
+				width--;
+			}
+		uart_send_raw((unsigned char *) s, width);
 		next:;
 	}
 	end:
-	va_end(va);
 	return i;
-	#else
-	return 0;
-	#endif
 }
+
+int uart_printf(char *format, ...) {
+	int ret;
+	va_list va;
+	va_start (va, format);
+	ret = uart_vprintf(format, va);
+	va_end(va);
+	return ret;
+}
+
+
 
 uint8_t uart_recv_char(void) {
 	while(!(LPC_UART->LSR & 1));

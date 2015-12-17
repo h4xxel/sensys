@@ -367,7 +367,7 @@ int radiolink_init(char _packet_size) {
 	radiolink_flush();
 	radiolink_read_reg(REG_FIFO_STATUS, 1, reg);
 	
-	uart_printf("radiolink init: status 0x%x config 0x%x fifo 0x%x\n", status, config, reg[0]);
+	//uart_printf("radiolink init: status 0x%x config 0x%x fifo 0x%x\n", status, config, reg[0]);
 	//TODO: check for error status, etc
 	
 	/*for(;;) {
