@@ -292,7 +292,7 @@ static void redraw_crosshair(double rx, double ry, double rz, CUBE_STATE_T *stat
 	glLoadIdentity();
 	glRotatef(rx, 1.f, 0, 0.0f);
 	glRotatef(ry, 0, 1.f, 0.0f);
-	glRotatef(rx, 0, 0, 1.0f);
+	glRotatef(rz, 0, 0, 1.0f);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, crosshair);
