@@ -1,5 +1,5 @@
-all:
-	gcc -o pi *.c -g -Wall -lm
+OBJS=triangle.o thread.o main.o
+BIN=hello_triangle.bin
 
-clean:
-	rm -f pi *.o
+include Makefile.include
+

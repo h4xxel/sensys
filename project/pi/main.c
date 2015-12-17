@@ -5,19 +5,13 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <math.h>
+#include "vector.h"
 
 #define STR(s) XSTR(s)
 #define XSTR(s) #s
 
 #define SAMPRATE 120
 #define BAUDRATE B115200
-
-typedef struct Vector3 Vector3;
-struct Vector3 {
-	double x;
-	double y;
-	double z;
-};
 
 int open_serial(const char *file, speed_t baudrate){
 	struct termios config;
@@ -111,10 +105,13 @@ int main(int argc, char **argv) {
 	} while(!(buf[0] == 'O' && buf[1] == 'K'));
 	
 	buf[255] = 0;
+	run_triangle();
+	#if 0
 	for(;;) {
-		get_gyro(serial, &gyro);
-		printf("%lf, %lf, %lf\n", gyro.x, gyro.y, gyro.z);
+//		get_gyro(serial, &gyro);
+//		printf("%lf, %lf, %lf\n", gyro.x, gyro.y, gyro.z);
 	}
+	#endif
 	
 	return 0;
 }
