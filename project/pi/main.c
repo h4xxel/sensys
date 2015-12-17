@@ -10,7 +10,7 @@
 #define STR(s) XSTR(s)
 #define XSTR(s) #s
 
-#define SAMPRATE 120
+#define SAMPRATE 50.0
 #define BAUDRATE B115200
 
 int open_serial(const char *file, speed_t baudrate){
@@ -79,10 +79,16 @@ ssize_t serial_gets(int fd, char *buf, size_t len) {
 }
 
 void get_gyro(int fd, Vector3 *vec) {
+	double x, y, z;
+	
 	char buf[256];
 	buf[255] = 0;
 	serial_gets(fd, buf, 255);
-	sscanf(buf, "%lf %lf %lf\r\n", &vec->x, &vec->y, &vec->z);
+	sscanf(buf, "%lf %lf %lf\r\n", &x, &y, &z);
+	
+	vec->x = x/32768.0*125.0*(1.0/SAMPRATE);
+	vec->y = y/32768.0*125.0*(1.0/SAMPRATE);
+	vec->z = z/32768.0*125.0*(1.0/SAMPRATE);
 }
 
 int main(int argc, char **argv) {
