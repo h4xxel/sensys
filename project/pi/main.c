@@ -106,9 +106,12 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 	
+	
+	printf("Waiting for motherboard reset...\n");
 	do {
 		serial_gets(serial, buf, 255);
 	} while(!(buf[0] == 'O' && buf[1] == 'K'));
+	printf("OK\n");
 	
 	buf[255] = 0;
 	run_triangle();
