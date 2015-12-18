@@ -87,6 +87,7 @@ static char *int_to_string(unsigned long long int n, char *s, int base) {
 }
 
 int uart_vprintf(char *format, va_list va) {
+	#ifndef DEBUG
 	unsigned char pad, c;
 	int i;
 	unsigned int j;
@@ -238,6 +239,7 @@ int uart_vprintf(char *format, va_list va) {
 	}
 	end:
 	return i;
+	#endif
 }
 
 int uart_printf(char *format, ...) {

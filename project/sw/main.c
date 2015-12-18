@@ -6,8 +6,11 @@
 #include "spi.h"
 #include "radiolink.h"
 #include "i2c.h"
+#include "imu.h"
+#include "protocol.h"
 
-#define GYRO_ADDR 0x68
+#define RANGE IMU_RANGE_HIGHEST
+#define SAMPLE_FREQ 50
 
 uint32_t global_timer;
 volatile uint32_t sampleflag = 0;
@@ -48,7 +51,7 @@ void initialize(void) {
 	util_delay(100000);
 	i2c_init(100);
 	//uart_printf("i2c_init() done\n");
-	radiolink_init(16);
+	radiolink_init(PROTOCOL_PACKET_SIZE);
 	//uart_printf("radiolink_init() done\n");
 }
 
@@ -57,45 +60,72 @@ void systick_irq() {
 	sampleflag = 1;
 }
 
-void systick_enable() {
-	SysTick->LOAD = SYSTEM_CLOCK / 50;
+void systick_enable(int frequency) {
+	SysTick->LOAD = SYSTEM_CLOCK / frequency;
 	SysTick->VAL = 0;
 	SysTick->CTRL = 0x1 | 0x2 | 0x4;
 }
 
+void setup_pins() {
+	LPC_GPIO0->DIR |= (1 << 3); //IMUA0
+	LPC_GPIO3->DIR |= (1 << 5); //IMUA1
+	LPC_GPIO0->DIR |= (1 << 6); //IMUA2
+	LPC_GPIO0->DIR |= (1 << 7); //IMUA3
+	LPC_GPIO2->DIR |= (1 << 9); //IMUA4
+	LPC_GPIO2->DIR |= (1 << 1); //IMUA5
+}
+
 int main(int ram, char **argv) {
-	int16_t x, y, z;
+	Imu imu;
+	ProtocolPacket packet;
+	uint32_t imus, tmp;
+	int i;
 	
 	initialize();
-	//uart_printf("Up and running!\n");
-	systick_enable();
+	systick_enable(SAMPLE_FREQ);
+	setup_pins();
 	
-	//i2c_lol();
-
-	LPC_GPIO0->DIR |= (1 << 3); // GPIO0_3 = IMUA0
-	LPC_GPIO0->MASKED_ACCESS[(1 << 3)] = 0;	// Set A0 to 0 => addresses below should be valid
-	//uart_printf("0x%X is value from accel (should be 0x41)\n", i2c_read_reg(0x1E, 0xF));
+	imus = imu_enumerate();
 	
-	i2c_write_reg(GYRO_ADDR, 0x0F, 0x84);
+	for(i = 0, tmp = imus; tmp; i++, tmp >>= 1) {
+		if(!(tmp & 0x1))
+			continue;
+		
+		uart_printf("Found IMU %i\r\n", i);
+		imu_setup(i, RANGE);
+	}
 	
-	uart_printf("OK 0x%X\r\n", i2c_read_reg(0x68, 0x0));
+	uart_printf("IMU setup done\r\n");
+	protocol_packet_new(&packet, RANGE);
 	
 	for(;;) {
 		while(!sampleflag);
 		sampleflag = 0;
 		
-		x = i2c_read_reg(GYRO_ADDR, 0x2);
-		x |= i2c_read_reg(GYRO_ADDR, 0x3) << 8;
-		
-		y = i2c_read_reg(GYRO_ADDR, 0x4);
-		y |= i2c_read_reg(GYRO_ADDR, 0x5) << 8;
-		
-		z = i2c_read_reg(GYRO_ADDR, 0x6);
-		z |= i2c_read_reg(GYRO_ADDR, 0x7) << 8;
-		
-		//temp = 23 + ((int8_t) i2c_read_reg(GYRO_ADDR, 0x8));
-		
-		uart_printf("%i %i %i\r\n", x, y, z);
+		uart_printf("-----------------------------------------\r\n");
+		for(i = 0, tmp = imus; tmp; i++, tmp >>= 1) {
+			if(!(tmp & 0x1))
+				continue;
+			
+			imu_sample(i, &imu);
+			uart_printf("IMU %i:\r\n\tGyro: x=%hi, y=%hi, z=%hi\r\n\tAccel: x=%hi, y=%hi, z=%hi\r\n",
+				i,
+				imu.gyro.x,
+				imu.gyro.y,
+				imu.gyro.z,
+				imu.accel.x,
+				imu.accel.y,
+				imu.accel.z
+			);
+			if(protocol_pack_imu(&packet, &imu, i) < 0) {
+				radiolink_send_stubborn(PROTOCOL_PACKET_SIZE, (void *) &packet, 1000);
+				protocol_packet_new(&packet, RANGE);
+			}
+		}
+		if(!protocol_packet_isempty(&packet)) {
+			radiolink_send_stubborn(PROTOCOL_PACKET_SIZE, (void *) &packet, 1000);
+			protocol_packet_new(&packet, RANGE);
+		}
 	}
 	
 	return 0;

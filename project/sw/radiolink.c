@@ -80,14 +80,23 @@ static inline void cmd_end() {
 	util_delay(DELAY);
 }
 
-static inline void ce_on() {
+static inline void ce_very_on() {
 	CE_PORT->MASKED_ACCESS[CE_PIN] = ~0;
 	util_delay(20);
 }
 
+static inline void ce_on() {
+	#if 0
+	CE_PORT->MASKED_ACCESS[CE_PIN] = ~0;
+	util_delay(20);
+	#endif
+}
+
 static inline void ce_off() {
+	#if 0
 	CE_PORT->MASKED_ACCESS[CE_PIN] = 0;
 	util_delay(DELAY);
+	#endif
 }
 
 unsigned char radiolink_read_reg(enum Reg reg, int size, unsigned char *buf) {
@@ -335,7 +344,7 @@ int radiolink_init(char _packet_size) {
 	CSN_PORT->MASKED_ACCESS[CSN_PIN] = ~0;
 	CE_PORT->MASKED_ACCESS[CE_PIN] = 0;
 	
-	util_delay(DELAY*10000);
+	util_delay(50000);
 	
 	radiolink_status();
 	
@@ -367,7 +376,8 @@ int radiolink_init(char _packet_size) {
 	radiolink_flush();
 	radiolink_read_reg(REG_FIFO_STATUS, 1, reg);
 	
-	//uart_printf("radiolink init: status 0x%x config 0x%x fifo 0x%x\n", status, config, reg[0]);
+	ce_very_on();
+	uart_printf("radiolink init: status 0x%x config 0x%x fifo 0x%x\r\n", status, config, reg[0]);
 	//TODO: check for error status, etc
 	
 	/*for(;;) {
