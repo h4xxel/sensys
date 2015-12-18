@@ -85,7 +85,6 @@ void get_gyro(int fd, Vector3 *vec) {
 	buf[255] = 0;
 	serial_gets(fd, buf, 255);
 	sscanf(buf, "%lf %lf %lf\r\n", &x, &y, &z);
-	fprintf(stderr, buf);
 	vec->x = x/32768.0*125.0*(1.0/SAMPRATE);
 	vec->y = y/32768.0*125.0*(1.0/SAMPRATE);
 	vec->z = z/32768.0*125.0*(1.0/SAMPRATE);
