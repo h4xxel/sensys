@@ -27,7 +27,7 @@ CHIP-XTAL	= 48000
 
 ASFLAGS		= -mthumb -mcpu=cortex-m0
 CFLAGS		= -O3 -Wall $(ASFLAGS) -D__NEWLIB__ -DUART_BAUD_RATE=$(UART-BAUDRATE) -DSYSTEM_CLOCK=$(CHIP-XTAL)000
-CFLAGS		+= -DDEBUG
+#CFLAGS		+= -DDEBUG
 LDFLAGS		= $(CFLAGS) -nostartfiles
 
 .PHONY: all clean install install-term extract-code
