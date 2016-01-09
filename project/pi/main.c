@@ -90,12 +90,13 @@ void get_gyro(int fd, Vector3 *vec) {
 	vec->z = z/32768.0*125.0*(1.0/SAMPRATE);
 }
 
+
 int main(int argc, char **argv) {
 	char buf[256];
 	int serial;
 	Vector3 gyro;
 	
-	if(argc < 2) {
+	/*if(argc < 2) {
 		fprintf(stderr, "Usage: sensys-lab2 /dev/serial-port\n");
 		return 1;
 	}
@@ -103,9 +104,11 @@ int main(int argc, char **argv) {
 	if((serial = open_serial(argv[1], BAUDRATE)) < 0) {
 		fprintf(stderr, "Error: could not open serial port\n");
 		return 1;
-	}
+	}*/
 	
-	
+	protocol_init();
+
+	#if 0
 	printf("Waiting for motherboard reset...\n");
 	do {
 		serial_gets(serial, buf, 255);
@@ -113,6 +116,7 @@ int main(int argc, char **argv) {
 	printf("OK\n");
 	
 	buf[255] = 0;
+	#endif
 	launch_worker(serial);
 	run_triangle();
 	#if 0

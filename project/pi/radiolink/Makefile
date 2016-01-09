@@ -1,2 +1,2 @@
 all:
-	gcc -g -Wall -o sensys *.c -lwiringPi
+	gcc -g -Wall -o sensys main.c radiolink.c -lwiringPi

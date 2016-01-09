@@ -23,7 +23,7 @@
 #define global_timer timer_now()
 
 //#define DELAY 5
-#define DELAY 60
+#define DELAY 100
 static int radio_used_flag = 0;
 
 enum Cmd {

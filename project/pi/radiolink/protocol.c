@@ -10,27 +10,6 @@
 #include <wiringPiSPI.h>
 
 
-#if 0
-struct SensorData {
-	int			sensor_id;
-	int			gyro_x;
-	int			gyro_y;
-	int			gyro_z;
-	int			acc_x;
-	int			acc_y;
-	int			acc_z;
-};
-
-
-struct DecodedPacket {
-	int			sequence;
-	int			samples;
-	int			range;
-	struct SensorData	sen1;
-	struct SensorData	sen2;
-
-};
-#endif
 
 static void __print_sensor(struct SensorData sd) {
 	fprintf(stderr,"Gyro %i:	%i, %i, %i\n", sd.sensor_id, sd.gyro_x, sd.gyro_y, sd.gyro_z);
@@ -80,11 +59,12 @@ struct DecodedPacket protocol_recv_decoded_packet() {
 	uint8_t data[26];
 
 	radiolink_recv(26, data);
+	printf("got data\n");
 	return __decode_packet(data);
 }
 
 
-int main() {
+int protocol_init() {
 	struct DecodedPacket dp;
 	uint8_t data[32];
 	time_t t = 0;
@@ -95,7 +75,7 @@ int main() {
 	
 	radiolink_init(26);
 
-	#if 1
+	#if 0
 	for (;;cnt++) {
 		if (t != time(NULL))
 			fprintf(stderr, "%i packets this second\n", cnt), cnt = 0, t = time(NULL);
