@@ -87,7 +87,7 @@ static char *int_to_string(unsigned long long int n, char *s, int base) {
 }
 
 int uart_vprintf(char *format, va_list va) {
-	#ifndef DEBUG
+	#ifdef DEBUG
 	unsigned char pad, c;
 	int i;
 	unsigned int j;

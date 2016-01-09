@@ -40,10 +40,15 @@ uint32_t imu_enumerate() {
 	for(i = 5; i >= 0; i--) {
 		ret <<= 1;
 		imu_select(i);
+		
 		if(i2c_read_reg(ACCEL_ADDR, 0xF) != 0x41)
 			continue;
+		//uart_printf("\tIMU %i: found accelerometer\r\n", i);		
+		
 		if(i2c_read_reg(GYRO_ADDR, 0x0) != 0xF)
 			continue;
+		//uart_printf("\tIMU %i: found gyro\r\n", i);
+		
 		
 		ret |= 1;
 	}

@@ -10,10 +10,15 @@
 #include "protocol.h"
 
 #define RANGE IMU_RANGE_HIGHEST
+
+#ifdef DEBUG
+#define SAMPLE_FREQ 1
+#else
 #define SAMPLE_FREQ 50
+#endif
 
 uint32_t global_timer;
-volatile uint32_t sampleflag = 0;
+volatile uint32_t sampleflag = 1;
 
 void initialize(void) {
 	/* TODO: Set CPU clock etc. */
@@ -76,10 +81,11 @@ void setup_pins() {
 }
 
 int main(int ram, char **argv) {
-	Imu imu;
-	ProtocolPacket packet;
+	Imu imu[IMU_MAX];
+	ProtocolPacket packet[IMU_MAX/2];
+	
 	uint32_t imus, tmp;
-	int i;
+	int i, j;
 	
 	initialize();
 	systick_enable(SAMPLE_FREQ);
@@ -96,35 +102,44 @@ int main(int ram, char **argv) {
 	}
 	
 	uart_printf("IMU setup done\r\n");
-	protocol_packet_new(&packet, RANGE);
 	
 	for(;;) {
+		protocol_packet_new(packet, RANGE);
+		
 		while(!sampleflag);
 		sampleflag = 0;
 		
 		uart_printf("-----------------------------------------\r\n");
-		for(i = 0, tmp = imus; tmp; i++, tmp >>= 1) {
+		for(i = 0, tmp = imus, j = 0; tmp; i++, tmp >>= 1) {
 			if(!(tmp & 0x1))
 				continue;
 			
-			imu_sample(i, &imu);
+			imu_sample(i, imu + i);
+		
 			uart_printf("IMU %i:\r\n\tGyro: x=%hi, y=%hi, z=%hi\r\n\tAccel: x=%hi, y=%hi, z=%hi\r\n",
 				i,
-				imu.gyro.x,
-				imu.gyro.y,
-				imu.gyro.z,
-				imu.accel.x,
-				imu.accel.y,
-				imu.accel.z
+				imu[i].gyro.x,
+				imu[i].gyro.y,
+				imu[i].gyro.z,
+				imu[i].accel.x,
+				imu[i].accel.y,
+				imu[i].accel.z
 			);
-			if(protocol_pack_imu(&packet, &imu, i) < 0) {
-				radiolink_send_stubborn(PROTOCOL_PACKET_SIZE, (void *) &packet, 1000);
-				protocol_packet_new(&packet, RANGE);
+			
+			if(protocol_pack_imu(packet + j, imu + i, i) < 0) {
+				j++;
+				if(j < IMU_MAX/2)
+					protocol_packet_new(packet + j, RANGE);
 			}
 		}
-		if(!protocol_packet_isempty(&packet)) {
-			radiolink_send_stubborn(PROTOCOL_PACKET_SIZE, (void *) &packet, 1000);
-			protocol_packet_new(&packet, RANGE);
+		
+		j = i/2;
+		
+		for(i = 0; i < j; i++) {
+			if(!protocol_packet_isempty(packet + i)) {
+				uart_printf("Sending packet %i\r\n", i);
+				radiolink_send_stubborn(PROTOCOL_PACKET_SIZE, (void *) (packet + i), 1000);
+			}
 		}
 	}
 	
