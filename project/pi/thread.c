@@ -12,9 +12,9 @@ void *sensor_data_worker(void *arg) {
 	Vector3 vec;
 	for (;;) {
 		get_gyro(serial_fd, &vec);
-		gyro_data.x += vec.x;
-		gyro_data.y += vec.y;
-		gyro_data.z += vec.z;
+		gyro_data.x += (vec.x);
+		gyro_data.y += (-vec.z);
+		gyro_data.z += (vec.y);
 	}
 }
 
