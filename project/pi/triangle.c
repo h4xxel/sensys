@@ -54,6 +54,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	
 
 extern Vector3 gyro_data;
+extern IMUVector accumulated_imu[6];
 
 typedef struct
 {
@@ -286,10 +287,15 @@ static GLfloat inc_and_clip_distance(GLfloat distance, GLfloat distance_inc)
  *
  ***********************************************************/
 
-static void redraw_crosshair(double rx, double ry, double rz, CUBE_STATE_T *state) {
-	glClear(GL_COLOR_BUFFER_BIT);
 
+void clear_screen() {
+	eglSwapBuffers(state->display, state->surface);
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+static void redraw_crosshair(double rx, double ry, double rz, double px, double py, double pz, CUBE_STATE_T *state) {
 	glLoadIdentity();
+	glTranslatef(px, py, pz);
 	glRotatef(rx, 1.f, 0, 0.0f);
 	glRotatef(ry, 0, 1.f, 0.0f);
 	glRotatef(rz, 0, 0, 1.0f);
@@ -300,8 +306,6 @@ static void redraw_crosshair(double rx, double ry, double rz, CUBE_STATE_T *stat
 	glDrawArrays(GL_LINES, 0, 6);
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
-	
-	eglSwapBuffers(state->display, state->surface);
 }
 
 static void exit_func(void)
@@ -344,11 +348,15 @@ int run_triangle ()
 	// initialise the OGLES texture(s)
 //	init_textures(state);
 
-	for (i = 0; !terminate; i++)
+	for (i = 0; !terminate;)
 	{
 //		update_model(state);
 //		redraw_scene(state);
-		redraw_crosshair(gyro_data.x, gyro_data.y, gyro_data.z, state);
+		//redraw_crosshair(gyro_data.x, gyro_data.y, gyro_data.z, state);
+		for (i = 0; i < 2; i++)
+			redraw_crosshair(accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y, accumulated_imu[i].gyro.z, accumulated_imu[i].acc.x, accumulated_imu[i].acc.y, accumulated_imu[i].acc.z, state);
+		clear_screen();
+		
 	}
 	exit_func();
 	return 0;

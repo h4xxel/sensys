@@ -8,5 +8,11 @@ struct Vector3 {
 	double z;
 };
 
+typedef struct IMUVector IMUVector;
+struct IMUVector {
+	struct Vector3 acc;
+	struct Vector3 gyro;
+};
+
 
 #endif
