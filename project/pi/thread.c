@@ -123,14 +123,18 @@ static void process_one_imu(struct SensorData sd, int samples, int range) {
 	
 	//TODO: correct angles
 	remove_gravity(&iv.acc, accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.z);
+	fprintf(stderr, "%lf %lf %lf\n", iv.acc.x, iv.acc.y, iv.acc.z);
 
 	velocity[i].x += imu_data[i].acc.x * SAMPLERATE;
 	velocity[i].y += imu_data[i].acc.y * SAMPLERATE;
 	velocity[i].z += imu_data[i].acc.z * SAMPLERATE;
 	
-	accumulated_imu[i].acc.x += velocity[i].x * SAMPLERATE;
+/*	accumulated_imu[i].acc.x += velocity[i].x * SAMPLERATE;
 	accumulated_imu[i].acc.y += velocity[i].y * SAMPLERATE;
-	accumulated_imu[i].acc.z += velocity[i].z * SAMPLERATE;
+	accumulated_imu[i].acc.z += velocity[i].z * SAMPLERATE;*/
+	imu_position[i].pos.x += velocity[i].x * SAMPLERATE;
+	imu_position[i].pos.y += velocity[i].y * SAMPLERATE;
+	imu_position[i].pos.z += velocity[i].z * SAMPLERATE;
 	
 	return;
 }

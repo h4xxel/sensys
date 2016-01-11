@@ -102,9 +102,9 @@ void bone_recalculate() {
 		tmp.pos.x = bone[i].imu_pos;
 		tmp.pos.y = tmp.pos.z = 0.;
 		calc_pos[i] = calculate_rotation_offsets(tmp.angle, tmp.pos);
-		calc_pos[i].x = bonerender[i].p1.x;
-		calc_pos[i].y = bonerender[i].p1.y;
-		calc_pos[i].z = bonerender[i].p1.z;
+		calc_pos[i].x += bonerender[i].p1.x;
+		calc_pos[i].y += bonerender[i].p1.y;
+		calc_pos[i].z += bonerender[i].p1.z;
 		calc_off[i].x = calc_pos[i].x - this.pos.x;
 		calc_off[i].y = calc_pos[i].y - this.pos.y;
 		calc_off[i].z = calc_pos[i].z - this.pos.z;
@@ -134,6 +134,10 @@ void bone_recalculate() {
 		imu_position[bone[i].imu_id].pos.y = calc_pos[i].y + avgy;
 		imu_position[bone[i].imu_id].pos.z = calc_pos[i].z + avgz;
 	}
+
+	global_pos.x += avgx;
+	global_pos.y += avgy;
+	global_pos.z += avgz;
 
 	fprintf(stderr, "Calculated variance: %lf %lf %lf\n", maxx - minx, maxy - miny, maxz - minz);
 }

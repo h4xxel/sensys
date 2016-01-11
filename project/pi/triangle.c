@@ -112,6 +112,7 @@ static void redraw_crosshair(double rx, double ry, double rz, double px, double 
 }
 
 static void camera_apply() {
+	#if 0
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -121,6 +122,7 @@ static void camera_apply() {
 	gluPerspective(45.0, 1.0, 0.001, 100.0);
 	gluLookAt(camera.x, camera.y, camera.z, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	glPushMatrix();
+	#endif
 }
 
 void camera_move(double x, double y, double z) {
