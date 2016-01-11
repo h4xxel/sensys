@@ -17,6 +17,7 @@ struct termios ttysave;
 
 void atexit_restore_terminal() {
 	tcsetattr(STDIN_FILENO, TCSANOW, &ttysave);
+	printf("Terminal reset to normal\n");
 	return;
 }
 

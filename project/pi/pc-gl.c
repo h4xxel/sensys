@@ -39,6 +39,9 @@ struct State {
 	Window	win;
 };
 
+void ogl_exit(State *state) {
+}
+
 void *ogl_state_new() {
 	return malloc(sizeof(State));
 }
@@ -116,7 +119,8 @@ bool ogl_init(State *state) {
 	
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LESS);
-
+	
+	atexit(ogl_exit);
 	return true;
 	
 	// Error handlers below
@@ -134,7 +138,4 @@ badvisual:
 void ogl_flip(State *state) {
 	glXSwapBuffers(state->dpy, state->win);
 	glClear(GL_COLOR_BUFFER_BIT);
-}
-
-void ogl_exit(State *state) {
 }
