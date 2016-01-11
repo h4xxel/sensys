@@ -2,7 +2,7 @@ OBJS+=pc-gl.o radiolink/bogus.o
 
 CFLAGS+=-DSTANDALONE -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS -DTARGET_POSIX -D_LINUX -fPIC -DPIC -D_REENTRANT -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -U_FORTIFY_SOURCE -Wall -g -ftree-vectorize -pipe -Wno-psabi 
 
-LDFLAGS+=-lGL -lX11 -lpthread -lrt -lm
+LDFLAGS+=-lGL -lGLU -lX11 -lpthread -lrt -lm
 
 INCLUDES+= -I./
 
