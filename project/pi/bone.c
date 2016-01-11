@@ -28,17 +28,44 @@ Vector3 calculate_rotation_offsets(Vector3 angle, Vector3 pos) {
 	return tmp;
 }
 
+
+double clamp_angle(double angle, double parent_angle, double max, double min) {
+	double diff;
+
+	diff = angle - parent_angle;
+	
+	if (diff > max)
+		return angle + max;
+	if (diff < min)
+		return angle - min;
+	return angle;
+}
+
+
+/* TODO: Allow for bones without an imu */
 void bone_recalculate() {
 	int i;
-	struct IMUPosition imu;
+	struct IMUPosition imu, this, tmp;
 
 	for (i = 0; i < bones; i++) {
 		if (bone[i].joint == -1)
 			memset(&imu, 0, sizeof(imu));
 		else
-			imu = imu_position[bone[i].joint];
+			imu = imu_position[bone[bone[i].joint].imu_id], imu.pos = bonerender[bone[i].joint].p2;
+		this = imu_position[bone[i].imu_id];
 		bonerender[i].p1 = imu.pos;
-		
+		tmp.angle.x = clamp_angle(this.angle.x, imu.angle.x, bone[i].max_angle_x, bone[i].min_angle_x);
+		tmp.angle.y = clamp_angle(this.angle.y, imu.angle.y, bone[i].max_angle_y, bone[i].min_angle_y);
+		tmp.angle.z = clamp_angle(this.angle.z, imu.angle.z, bone[i].max_angle_z, bone[i].min_angle_z);
+		imu_position[bone[i].imu_id].angle = tmp.angle;
+		tmp.pos.x = bone[i].length;
+		tmp.pos.y = 0.;
+		tmp.pos.z = 0.;
+		tmp.pos = calculate_rotation_offsets(tmp.angle, tmp.pos);
+		tmp.pos.x += bonerender[i].p1.x;
+		tmp.pos.y += bonerender[i].p1.y;
+		tmp.pos.z += bonerender[i].p1.z;
+		bonerender[i].p2 = tmp.pos;
 	}
 }
 
