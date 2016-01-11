@@ -8,6 +8,13 @@ struct Vector3 {
 	double z;
 };
 
+typedef struct Vector3f Vector3f;
+struct Vector3f {
+	float	x;
+	float	y;
+	float	z;
+};
+
 typedef struct IMUVector IMUVector;
 struct IMUVector {
 	struct Vector3 acc;

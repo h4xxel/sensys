@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "gl.h"
 #include "vector.h"
+#include "bone.h"
 
 #include "cube_texture_and_coords.h"
 
@@ -52,6 +53,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 extern Vector3 gyro_data;
 extern IMUVector accumulated_imu[6];
+extern struct BoneRender *bonerender;
+extern int bones;
 
 Vector3 camera = {0.0, 0.0, RADIUS};
 double camera_yaw, camera_pitch;
@@ -74,6 +77,25 @@ static volatile int terminate;
  * Returns: void
  *
  ***********************************************************/
+
+
+
+static void redraw_bones() {
+	int i;
+
+	bone_recalculate();
+
+	for (i = 0; i < bones; i++) {
+		glLoadIdentity();
+		glEnableClientState(GL_VERTEX_ARRAY);
+		
+		glVertexPointer(3, GL_FLOAT, 0, bonerender);
+		glDrawArrays(GL_LINES, 0, 6);
+
+		glDisableClientState(GL_VERTEX_ARRAY);
+	}
+}
+
 
 static void redraw_crosshair(double rx, double ry, double rz, double px, double py, double pz) {
 	glTranslatef(px, py, pz);
@@ -131,6 +153,7 @@ int run_triangle () {
 		camera_apply();
 		for (i = 0; i < 2; i++)
 			redraw_crosshair(accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y, accumulated_imu[i].gyro.z, accumulated_imu[i].acc.x, accumulated_imu[i].acc.y, accumulated_imu[i].acc.z);
+		redraw_bones();
 		ogl_flip(state);
 	}
 	
