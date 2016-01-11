@@ -14,5 +14,11 @@ struct IMUVector {
 	struct Vector3 gyro;
 };
 
+typedef struct IMUPosition IMUPosition;
+struct IMUPosition {
+	struct Vector3 pos;
+	struct Vector3 angle;
+};
+
 
 #endif
