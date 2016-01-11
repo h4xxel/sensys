@@ -16,6 +16,7 @@
 int serial_fd;
 Vector3 gyro_data;
 
+Vector3 velocity[6];
 
 IMUPosition imu_position[6];
 IMUVector accumulated_imu[6];
@@ -101,34 +102,40 @@ static void remove_gravity(Vector3 *acc, double u, double v) {
 
 static void process_one_imu(struct SensorData sd, int samples, int range) {
 	struct IMUVector iv;
+	int i = sd.sensor_id;
 	
 	if (sd.sensor_id > 5)
 		return;
-
-	iv.acc.x = acc_scaling[range] * sd.acc_x * samples /** SAMPLERATE*/;
-	iv.acc.y = acc_scaling[range] * sd.acc_y * samples /** SAMPLERATE*/;
-	iv.acc.z = acc_scaling[range] * sd.acc_z * samples /** SAMPLERATE*/;
+	
 	iv.gyro.x = gyro_scaling[range] * sd.gyro_x * samples * SAMPLERATE;
 	iv.gyro.y = gyro_scaling[range] * sd.gyro_y * samples * SAMPLERATE;
 	iv.gyro.z = gyro_scaling[range] * sd.gyro_z * samples * SAMPLERATE;
 
-	imu_data[sd.sensor_id] = iv;
+	imu_data[sd.sensor_id].gyro = iv.gyro;
+	
+	accumulated_imu[i].gyro.x += imu_data[i].gyro.x;
+	accumulated_imu[i].gyro.y += imu_data[i].gyro.y;
+	accumulated_imu[i].gyro.z += imu_data[i].gyro.z;
+	
+	iv.acc.x = acc_scaling[range] * sd.acc_x * samples /** SAMPLERATE*/;
+	iv.acc.y = acc_scaling[range] * sd.acc_y * samples /** SAMPLERATE*/;
+	iv.acc.z = acc_scaling[range] * sd.acc_z * samples /** SAMPLERATE*/;
+	
+	//TODO: correct angles
+	remove_gravity(&iv.acc, accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.z);
+
+	velocity[i].x += imu_data[i].acc.x * SAMPLERATE;
+	velocity[i].y += imu_data[i].acc.y * SAMPLERATE;
+	velocity[i].z += imu_data[i].acc.z * SAMPLERATE;
+	
+	accumulated_imu[i].acc.x += velocity[i].x * SAMPLERATE;
+	accumulated_imu[i].acc.y += velocity[i].y * SAMPLERATE;
+	accumulated_imu[i].acc.z += velocity[i].z * SAMPLERATE;
+	
 	return;
 }
 
 
-static void __add_imu() {
-	int i;
-
-	for (i = 0; i < 6; i++) {
-		accumulated_imu[i].acc.x = imu_data[i].acc.x;
-		accumulated_imu[i].acc.y = imu_data[i].acc.y;
-		accumulated_imu[i].acc.z = imu_data[i].acc.z;
-		accumulated_imu[i].gyro.x += imu_data[i].gyro.x;
-		accumulated_imu[i].gyro.y += imu_data[i].gyro.y;
-		accumulated_imu[i].gyro.z += imu_data[i].gyro.z;
-	}
-}
 
 
 static void process_imu() {
@@ -139,7 +146,6 @@ static void process_imu() {
 		dp = protocol_recv_decoded_packet();
 		process_one_imu(dp.sen1, dp.samples, dp.range);
 		process_one_imu(dp.sen2, dp.samples, dp.range);
-		__add_imu();
 		while ((ch = getchar()) >= ' ' || ch == '\n')
 			switch(ch) {
 				case '\n':
