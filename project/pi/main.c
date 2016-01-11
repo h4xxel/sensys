@@ -141,6 +141,7 @@ int main(int argc, char **argv) {
 	
 	buf[255] = 0;
 	#endif
+	bone_parse("testbone.txt");
 	launch_worker(serial);
 	run_triangle();
 	#if 0

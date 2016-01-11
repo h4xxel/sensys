@@ -18,7 +18,7 @@ struct Bone {
 
 
 struct BoneRender {
-	Vector3 		p1, p2;
+	Vector3f 		p1, p2;
 };
 
 
@@ -26,5 +26,7 @@ extern struct Bone *bone;
 extern int bones;
 
 void bone_parse(char *fname);
+void bone_recalculate();
+
 
 #endif
