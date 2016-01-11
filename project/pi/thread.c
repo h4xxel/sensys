@@ -53,12 +53,17 @@ static void __add_imu() {
 
 static void process_imu() {
 	struct DecodedPacket dp;
+	int ch, i;
 
 	for (;;) {
 		dp = protocol_recv_decoded_packet();
 		process_one_imu(dp.sen1, dp.samples, dp.range);
 		process_one_imu(dp.sen2, dp.samples, dp.range);
 		__add_imu();
+		while ((ch = fgetc(stdin)) >= ' ' || ch == '\n')
+			if (ch == '\n')
+				for (i = 0; i < 6; i++)
+					accumulated_imu[i].gyro.x = accumulated_imu[i].gyro.y = accumulated_imu[i].gyro.z = 0.;
 	}
 }
 

@@ -13,6 +13,29 @@
 #define SAMPRATE 50.0
 #define BAUDRATE B115200
 
+struct termios ttysave;
+
+void atexit_restore_terminal() {
+	tcsetattr(STDIN_FILENO, TCSANOW, &ttysave);
+	return;
+}
+
+
+void init_unbuffered_input() {
+	struct termios ttystate;
+	atexit(atexit_restore_terminal);
+
+	tcgetattr(STDIN_FILENO, &ttystate);
+	ttysave = ttystate;
+	ttystate.c_lflag &= ~(ICANON | ECHO);
+	ttystate.c_cc[VMIN] = 1;
+	tcsetattr(STDIN_FILENO, TCSANOW, &ttysave);
+	fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
+	
+	return;
+}
+
+
 int open_serial(const char *file, speed_t baudrate){
 	struct termios config;
 	int fd;
@@ -107,6 +130,7 @@ int main(int argc, char **argv) {
 	}*/
 	
 	protocol_init();
+	init_unbuffered_input();
 
 	#if 0
 	printf("Waiting for motherboard reset...\n");
