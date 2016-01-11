@@ -9,5 +9,6 @@ void util_delay_tus(int tus);
 void util_str_to_bin(char *str, int chars);
 void util_bin_to_str(unsigned char *str, char *target, int bytes);
 void *memcpy(void *dest, void *src, int bytes);
+int debug_printf(const char *format, ...);
 
 #endif

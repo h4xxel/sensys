@@ -23,7 +23,7 @@ UART-BAUDRATE	= 115200
 TERM-BAUDRATE	= 115200
 #UART-BAUDRATE	= 230400
 #CHIP-XTAL	= 60000
-CHIP-XTAL	= 48000
+CHIP-XTAL	= 50000
 
 ASFLAGS		= -mthumb -mcpu=cortex-m0
 CFLAGS		= -O3 -Wall $(ASFLAGS) -D__NEWLIB__ -DUART_BAUD_RATE=$(UART-BAUDRATE) -DSYSTEM_CLOCK=$(CHIP-XTAL)000
@@ -52,14 +52,14 @@ clean:
 	@echo " [ RM ] $(OBJFILES) system/startup.o $(BINFILE).hex $(BINFILE).elf"
 	@$(RM) $(OBJFILES) system/startup.o $(BINFILE).hex $(BINFILE).elf
 
-system/startup.o:
+system/startup.o: Makefile
 	@echo " [ CC ] $@"
 	@$(CC) $(CFLAGS) -c -o $@ $*.c
 
-%.o: %.c %.h
+%.o: %.c %.h Makefile
 	@echo " [ CC ] $@"
 	@$(CC) $(CFLAGS) -c -o $@ $<
 
-%.o: %.s
+%.o: %.s Makefile
 	@echo " [ AS ] $@"
 	@$(AS) $(ASFLAGS) -o $@ $<
