@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <assert.h>
 #include "bcm_host.h"
 
 #include "GLES/gl.h"
@@ -36,7 +37,7 @@ void *ogl_state_new() {
 	return malloc(sizeof(State));
 }
 
-bool init_ogl(State *state)
+bool ogl_init(State *state)
 {
 	int32_t success = 0;
 	EGLBoolean result;
@@ -134,7 +135,7 @@ void ogl_flip(State *state) {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void ogl_exit(void) {
+void ogl_exit(State *state) {
 	// clear screen
 	glClear( GL_COLOR_BUFFER_BIT );
 	eglSwapBuffers(state->display, state->surface);

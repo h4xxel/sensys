@@ -134,7 +134,7 @@ int run_triangle () {
 		ogl_flip(state);
 	}
 	
-	ogl_exit();
+	ogl_exit(state);
 	return 0;
 }
 

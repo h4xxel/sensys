@@ -136,5 +136,5 @@ void ogl_flip(State *state) {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void ogl_exit(void) {
+void ogl_exit(State *state) {
 }
