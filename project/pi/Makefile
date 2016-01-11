@@ -1,5 +1,5 @@
-OBJS=triangle.o thread.o main.o radiolink/radiolink.o radiolink/protocol.o
-BIN=hello_triangle.bin
-
-include Makefile.include
-
+ifeq ($(shell uname -m),armv6l)
+include Makefile.pi
+else
+include Makefile.pc
+endif

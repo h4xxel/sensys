@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <math.h>
 
 #include "radiolink/protocol.h"
 #include "vector.h"
@@ -16,7 +17,7 @@ IMUVector imu_data[6];
 
 
 double acc_scaling[4] = { 2./32767, 2./32767, 4./32767, 8./32767 };
-double gyro_scaling[4] = { 125./32767, 250./32767, 500./32767, 1000./32767 };
+double gyro_scaling[4] = { (125./M_PI*180.0)/32767, (250./M_PI*180.0)/32767, (500./M_PI*180.0)/32767, (1000./M_PI*180.0)/32767 };
 
 
 static void process_one_imu(struct SensorData sd, int samples, int range) {

@@ -1,0 +1,30 @@
+OBJS=triangle.o pc-gl.o thread.o main.o radiolink/bogus.o
+BIN=sensys
+
+CFLAGS+=-DSTANDALONE -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS -DTARGET_POSIX -D_LINUX -fPIC -DPIC -D_REENTRANT -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -U_FORTIFY_SOURCE -Wall -g -ftree-vectorize -pipe -Wno-psabi 
+
+LDFLAGS+=-lGL -lX11 -lpthread -lrt -lm
+
+INCLUDES+= -I./
+
+all: $(BIN) $(LIB)
+
+%.o: %.c
+	@rm -f $@ 
+	$(CC) $(CFLAGS) $(INCLUDES) -g -c $< -o $@ -Wno-deprecated-declarations
+
+%.o: %.cpp
+	@rm -f $@ 
+	$(CXX) $(CFLAGS) $(INCLUDES) -g -c $< -o $@ -Wno-deprecated-declarations
+
+$(BIN): $(OBJS)
+	$(CC) -o $@ -Wl,--whole-archive $(OBJS) $(LDFLAGS) -Wl,--no-whole-archive -rdynamic
+
+%.a: $(OBJS)
+	$(AR) r $@ $^
+
+clean:
+	for i in $(OBJS); do (if test -e "$$i"; then ( rm $$i ); fi ); done
+	@rm -f $(BIN) $(LIB)
+
+
