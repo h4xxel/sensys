@@ -36,6 +36,69 @@ static void calibrate_gyro(IMUPosition *imu) {
 }
 #endif
 
+static void scalar_dot_matrix33(double scalar, double matrix[9]) {
+	int i;
+	
+	for(i = 0; i < 9; i++)
+		matrix[i] *= scalar;
+}
+
+static void matrix33_times_vector3(double matrix[9], Vector3 *vec) {
+	double x, y, z;
+	
+	x = vec->x;
+	y = vec->y;
+	z = vec->z;
+	
+	vec->x = (matrix[0]*x + matrix[1]*y + matrix[2]*z);
+	vec->y = (matrix[3]*x + matrix[4]*y + matrix[5]*z);
+	vec->z = (matrix[6]*x + matrix[7]*y + matrix[8]*z);
+}
+
+static void vector3_minus_vector3(Vector3 *a, Vector3 *b) {
+	a->x -= b->x;
+	a->y -= b->y;
+	a->z -= b->z;
+}
+
+static void remove_gravity(Vector3 *acc, double u, double v) {
+	Vector3 gravity = {0.0, -1.0, 0.0};
+	
+	double a, b, c, d, e, f, g, h, i;
+	double det, res;
+	
+	double rot_inv[9];
+	
+	a = cos(v);
+	b = -sin(v);
+	c = 1;
+	d = cos(u)*sin(v);
+	e = cos(u)*cos(v);
+	f = -sin(u);
+	g = sin(u)*sin(v);
+	h = sin(u)*cos(v);
+	i = cos(u);
+	
+	det = a*e*i - a*f*h - b*d*i + b*f*g + c*d*h - c*e*g;
+	
+	rot_inv[0] = e*i - f*h;
+	rot_inv[1] = c*h - b*i;
+	rot_inv[2] = b*f - c*e;
+	
+	rot_inv[3] = f*g - d*i;
+	rot_inv[4] = a*i - c*g;
+	rot_inv[5] = c*d - a*f;
+	
+	rot_inv[6] = d*h - e*g;
+	rot_inv[7] = b*g - a*h;
+	rot_inv[8] = a*e - b*d;
+	
+	scalar_dot_matrix33(1.0/det, rot_inv);
+	
+	matrix33_times_vector3(rot_inv, &gravity);
+	vector3_minus_vector3(acc, &gravity);
+}
+
 static void process_one_imu(struct SensorData sd, int samples, int range) {
 	struct IMUVector iv;
 	
