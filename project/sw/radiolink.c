@@ -157,7 +157,6 @@ unsigned char radiolink_send(int size, unsigned char *data) {
 	for(; size > 0; size -= packet_size) {
 		do {
 			status = radiolink_status();
-			/*uart_printf("arne 0x%x\n", status);*/
 			if((status & 0x10) || global_timer - last_timer >= 800) {
 				last_timer = global_timer;
 				radiolink_flush();
@@ -174,7 +173,6 @@ unsigned char radiolink_send(int size, unsigned char *data) {
 		
 		do {
 			status = radiolink_status();
-			/*uart_printf("arne 0x%x\n", status);*/
 			if((status & 0x10) || global_timer - last_timer >= 800) {
 				
 				radiolink_flush();
@@ -203,7 +201,6 @@ unsigned char radiolink_send_unreliable(int size, unsigned char *data) {
 	for(; size > 0; size -= packet_size) {
 		do {
 			status = radiolink_status();
-			/*uart_printf("arne 0x%x\n", status);*/
 			if((status & 0x10) || global_timer - last_timer >= 800) {
 				last_timer = global_timer;
 				radiolink_flush();
@@ -252,9 +249,7 @@ unsigned char radiolink_recv_timeout(int size, unsigned char *data, int timeout)
 		return 0x0;
 
 	time_now = global_timer;
-	//uart_printf("0x%X -- \n", (unsigned int) data);
 	radiolink_read_reg(REG_FIFO_STATUS, 1, &status);
-	//uart_printf("0x%X 0x%X\n", status, radiolink_status());
 
 	radiolink_read_reg(REG_CONFIG, 1, &config);
 	config |= 0x1;
@@ -363,7 +358,6 @@ int radiolink_init(char _packet_size) {
 	radiolink_read_reg(REG_CONFIG, 1, reg);
 	config = reg[0];
 	
-	//uart_printf("config 0x%x\n", reg[0]);
 	/*Fifo size, 0-32*/
 	reg[0] = _packet_size;
 	radiolink_write_reg(REG_RX_PW_P0, 1, reg);
@@ -377,22 +371,8 @@ int radiolink_init(char _packet_size) {
 	radiolink_read_reg(REG_FIFO_STATUS, 1, reg);
 	
 	ce_very_on();
-	uart_printf("radiolink init: status 0x%x config 0x%x fifo 0x%x\r\n", status, config, reg[0]);
+	debug_printf("radiolink init: status 0x%x config 0x%x fifo 0x%x\r\n", status, config, reg[0]);
 	//TODO: check for error status, etc
-	
-	/*for(;;) {
-		uart_printf("status 0x%x\n", radiolink_send(4, data));
-		status = radiolink_read_reg(REG_FIFO_STATUS, 1, reg);
-		uart_printf("fifo 0x%x status 0x%x\n", reg[0], status);
-		util_delay(50000);
-	}*/
-	
-	/*for(;;) {
-		radiolink_recv(4, data);
-		uart_printf("got data: %s\n", data);
-	}
-	
-	for(;;);*/
 	
 	return 0;
 }

@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include "system/LPC11xx.h"
 #include "util.h"
 #include "uart.h"
@@ -86,6 +87,18 @@ void util_str_to_bin(char *str, int chars) {
 	return;
 }
 
+int debug_printf(const char *format, ...) {
+	#ifdef DEBUG
+	int ret;
+	va_list va;
+	va_start (va, format);
+	ret = uart_vprintf(format, va);
+	va_end(va);
+	return ret;
+	#else
+	return 0;
+	#endif
+}
 
 void *memcpy(void *dest, void *src, int bytes) {
 	char *dst, *sr;

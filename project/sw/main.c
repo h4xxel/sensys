@@ -23,11 +23,12 @@ volatile uint32_t sampleflag = 1;
 void initialize(void) {
 	/* TODO: Set CPU clock etc. */
 	
+	LPC_SYSCON->SYSOSCCTRL = 0x3; //Use external oscillator
 	LPC_SYSCON->SYSAHBCLKCTRL |= (1 << 16);
 	LPC_SYSCON->SYSAHBCLKDIV = 0x1;
 	LPC_SYSCON->PDRUNCFG &= ~0x80;
-	LPC_SYSCON->SYSPLLCTRL = 0x23;
-	LPC_SYSCON->SYSPLLCLKSEL = 0x0;
+	LPC_SYSCON->SYSPLLCTRL = 0x01;
+	LPC_SYSCON->SYSPLLCLKSEL = 0x1; //Use system oscillator and not RC oscillator
 	LPC_SYSCON->SYSPLLCLKUEN = 0x0;
 	LPC_SYSCON->SYSPLLCLKUEN = 0x1;
 	while(!(LPC_SYSCON->SYSPLLSTAT & 1));
@@ -97,26 +98,28 @@ int main(int ram, char **argv) {
 		if(!(tmp & 0x1))
 			continue;
 		
-		uart_printf("Found IMU %i\r\n", i);
+		debug_printf("Found IMU %i\r\n", i);
 		imu_setup(i, RANGE);
 	}
 	
-	uart_printf("IMU setup done\r\n");
+	debug_printf("IMU setup done\r\n");
 	
 	for(;;) {
 		protocol_packet_new(packet, RANGE);
 		
+		if(sampleflag)
+			uart_printf("Warning! Missed deadline\r\n");
 		while(!sampleflag);
 		sampleflag = 0;
 		
-		uart_printf("-----------------------------------------\r\n");
+		debug_printf("-----------------------------------------\r\n");
 		for(i = 0, tmp = imus, j = 0; tmp; i++, tmp >>= 1) {
 			if(!(tmp & 0x1))
 				continue;
 			
 			imu_sample(i, imu + i);
 		
-			uart_printf("IMU %i:\r\n\tGyro: x=%hi, y=%hi, z=%hi\r\n\tAccel: x=%hi, y=%hi, z=%hi\r\n",
+			debug_printf("IMU %i:\r\n\tGyro: x=%hi, y=%hi, z=%hi\r\n\tAccel: x=%hi, y=%hi, z=%hi\r\n",
 				i,
 				imu[i].gyro.x,
 				imu[i].gyro.y,
@@ -137,7 +140,7 @@ int main(int ram, char **argv) {
 		
 		for(i = 0; i < j; i++) {
 			if(!protocol_packet_isempty(packet + i)) {
-				uart_printf("Sending packet %i\r\n", i);
+				debug_printf("Sending packet %i\r\n", i);
 				radiolink_send_stubborn(PROTOCOL_PACKET_SIZE, (void *) (packet + i), 1000);
 			}
 		}

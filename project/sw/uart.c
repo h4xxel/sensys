@@ -87,7 +87,6 @@ static char *int_to_string(unsigned long long int n, char *s, int base) {
 }
 
 int uart_vprintf(char *format, va_list va) {
-	#ifdef DEBUG
 	unsigned char pad, c;
 	int i;
 	unsigned int j;
@@ -239,7 +238,6 @@ int uart_vprintf(char *format, va_list va) {
 	}
 	end:
 	return i;
-	#endif
 }
 
 int uart_printf(char *format, ...) {
@@ -274,45 +272,4 @@ uint16_t uart_recv_try(void) {
 	if (LPC_UART->LSR & 1)
 		return LPC_UART->RBR | 0x100;
 	return 0;
-}
-
-
-void uart_loop(void) {
-	char cmd[16]/*, done[17]*/;
-	int i, /*j,*/ command, arg;
-
-	uart_send_string(" > ");
-
-	for (i = 0;; ) {
-		if (LPC_UART->LSR & 1) {
-			cmd[i] = LPC_UART->RBR;
-			if (i == 15)
-				LPC_UART->THR = '\b';
-
-			LPC_UART->THR = cmd[i];
-			if ((cmd[i] >= '0' && cmd[i] <= '9') || (cmd[i] >= 'A' && cmd[i] <= 'F') || cmd[i] == ' ') {
-				if (i < 15)
-					i++;
-			} else if (cmd[i] == '\n')
-				break;
-			else if (i < 15)
-				LPC_UART->THR = '\b';
-		}
-	}
-
-	if (!i)
-		return;
-	command = arg = 0;
-
-	util_str_to_bin(cmd, i);
-//	util_bin_to_str(cmd, done, i >> 1);
-	memcpy(&command, cmd, 1);
-	memcpy(&arg, &cmd[1], 4);
-	/* TODO: Call SPI function */
-
-	/* TODO: Wait for response */
-
-	uart_send_string("\n");
-
-	return;
 }
