@@ -12,6 +12,7 @@ int serial_fd;
 Vector3 gyro_data;
 
 
+IMUPosition imu_position[6];
 IMUVector accumulated_imu[6];
 IMUVector imu_data[6];
 
