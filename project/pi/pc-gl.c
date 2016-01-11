@@ -113,6 +113,9 @@ bool ogl_init(State *state) {
 	XFree(xv);
 	
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+	
+	glDepthMask(GL_TRUE);
+	glDepthFunc(GL_LESS);
 
 	return true;
 	

@@ -122,6 +122,10 @@ bool init_ogl(State *state)
 	//glEnable(GL_CULL_FACE);
 
 	glMatrixMode(GL_MODELVIEW);
+	
+	glDepthMask(GL_TRUE);
+	glDepthFunc(GL_LESS);
+	
 	return true;
 }
 

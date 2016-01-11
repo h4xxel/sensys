@@ -29,7 +29,7 @@ void init_unbuffered_input() {
 	ttysave = ttystate;
 	ttystate.c_lflag &= ~(ICANON | ECHO);
 	ttystate.c_cc[VMIN] = 1;
-	tcsetattr(STDIN_FILENO, TCSANOW, &ttysave);
+	tcsetattr(STDIN_FILENO, TCSANOW, &ttystate);
 	fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
 	
 	return;
@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
 	
 	protocol_init();
 	init_unbuffered_input();
-
+	
 	#if 0
 	printf("Waiting for motherboard reset...\n");
 	do {
