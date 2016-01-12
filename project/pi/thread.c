@@ -26,13 +26,52 @@ IMUVector imu_data[6];
 double acc_scaling[4] = { 2./32767, 2./32767, 4./32767, 8./32767 };
 double gyro_scaling[4] = { (125.*M_PI/180.0)/32767, (250.*M_PI/180.0)/32767, (500.*M_PI/180.0)/32767, (1000.*M_PI/180.0)/32767 };
 
-
-static void calibrate_gyro(IMUPosition *imu) {
+/*
+static void calibrate_gyro(IMUVector *accumulated, IMUVector *raw) {
 	double len = sqrt(POW2(imu->pos.x) + POW2(imu->pos.y) + POW2(imu->pos.z));
 	
 	if(fabs(len - 1.0) < G_THRESHOLD) {
 		
 	}
+}
+*/
+
+static void norm_vector(Vector3 *vec) {
+	double len = sqrt(POW2(vec->x) + POW2(vec->y) + POW2(vec->z));
+	
+	vec->x /= len;
+	vec->y /= len;
+	vec->z /= len;
+}
+
+static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
+	double mat[9];
+	Vector3 u, rot;
+	double theta;
+	
+	theta = accumulated->gyro.z;
+	
+	u = raw->acc;
+	norm_vector(&u);
+	
+	mat[0] = cos(theta) + u.x*u.x*(1 - cos(theta));
+	mat[1] = u.x*u.y*(1 - cos(theta)) - u.z*sin(theta);
+	mat[2] = u.x*u.z*(1 - cos(theta)) + u.y*sin(theta);
+	
+	mat[3] = u.y*u.x*(1 - cos(theta)) + u.z*sin(theta);
+	mat[4] = cos(theta) + u.y*u.y*(1 - cos(theta));
+	mat[5] = u.y*u.z*(1 - cos(theta)) - u.x*sin(theta);
+	
+	mat[6] = u.z*u.x*(1 - cos(theta)) - u.y*sin(theta);
+	mat[7] = u.z*u.y*(1 - cos(theta)) + u.x*sin(theta);
+	mat[8] = cos(theta) + u.z*u.z*(1 - cos(theta));
+	
+	//Thanks to: http://nghiaho.com/?page_id=846
+	rot.x = atan2(mat[7], mat[8]);
+	rot.y = atan2(-mat[6], sqrt(POW2(mat[7]) + POW2(mat[8])));
+	rot.z = atan2(mat[3], mat[0]);
+	
+	accumulated->gyro = rot;
 }
 
 static void scalar_dot_matrix33(double scalar, double matrix[9]) {
