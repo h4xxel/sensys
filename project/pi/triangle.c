@@ -24,6 +24,7 @@
 
 extern Vector3 gyro_data;
 extern IMUVector accumulated_imu[6];
+extern IMUPosition imu_position[6];
 extern struct BoneRender *bonerender;
 extern int bones;
 
@@ -125,7 +126,7 @@ int run_triangle () {
 	for (i = 0; !terminate;) {
 		camera_apply();
 		for (i = 0; i < 2; i++)
-			redraw_crosshair(accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y, accumulated_imu[i].gyro.z, accumulated_imu[i].acc.x, accumulated_imu[i].acc.y, accumulated_imu[i].acc.z);
+			redraw_crosshair(accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y, accumulated_imu[i].gyro.z, imu_position[i].pos.x, imu_position[i].pos.y, imu_position[i].pos.z);
 		redraw_bones();
 		ogl_flip(state);
 	}
