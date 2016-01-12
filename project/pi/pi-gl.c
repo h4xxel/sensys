@@ -1,3 +1,30 @@
+/*
+Copyright (c) 2012, Broadcom Europe Ltd
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+	 * Redistributions of source code must retain the above copyright
+		notice, this list of conditions and the following disclaimer.
+	 * Redistributions in binary form must reproduce the above copyright
+		notice, this list of conditions and the following disclaimer in the
+		documentation and/or other materials provided with the distribution.
+	 * Neither the name of the copyright holder nor the
+		names of its contributors may be used to endorse or promote products
+		derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 #include <stdbool.h>
 #include <assert.h>
 #include "bcm_host.h"
@@ -32,6 +59,22 @@ struct State {
 	char *tex_buf3;
 };
 
+void ogl_exit(State *state) {
+	// clear screen
+	glClear( GL_COLOR_BUFFER_BIT );
+	eglSwapBuffers(state->display, state->surface);
+
+	// Release OpenGL resources
+	eglMakeCurrent( state->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
+	eglDestroySurface( state->display, state->surface );
+	eglDestroyContext( state->display, state->context );
+	eglTerminate( state->display );
+
+	// release texture buffers
+	free(state->tex_buf1);
+	free(state->tex_buf2);
+	free(state->tex_buf3);
+}
 
 void *ogl_state_new() {
 	return malloc(sizeof(State));
@@ -127,27 +170,11 @@ bool ogl_init(State *state)
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LESS);
 	
+	atexit(ogl_exit);
 	return true;
 }
 
 void ogl_flip(State *state) {
 	eglSwapBuffers(state->display, state->surface);
 	glClear(GL_COLOR_BUFFER_BIT);
-}
-
-void ogl_exit(State *state) {
-	// clear screen
-	glClear( GL_COLOR_BUFFER_BIT );
-	eglSwapBuffers(state->display, state->surface);
-
-	// Release OpenGL resources
-	eglMakeCurrent( state->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
-	eglDestroySurface( state->display, state->surface );
-	eglDestroyContext( state->display, state->context );
-	eglTerminate( state->display );
-
-	// release texture buffers
-	free(state->tex_buf1);
-	free(state->tex_buf2);
-	free(state->tex_buf3);
 }

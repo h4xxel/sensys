@@ -27,15 +27,13 @@ double acc_scaling[4] = { 2./32767, 2./32767, 4./32767, 8./32767 };
 double gyro_scaling[4] = { (125.*M_PI/180.0)/32767, (250.*M_PI/180.0)/32767, (500.*M_PI/180.0)/32767, (1000.*M_PI/180.0)/32767 };
 
 
-#if 0
 static void calibrate_gyro(IMUPosition *imu) {
-	double len = sqrt(POW2(imu->acc_x) + POW2(imu->acc_y) + POW2(imu->acc_z));
+	double len = sqrt(POW2(imu->pos.x) + POW2(imu->pos.y) + POW2(imu->pos.z));
 	
 	if(fabs(len - 1.0) < G_THRESHOLD) {
 		
 	}
 }
-#endif
 
 static void scalar_dot_matrix33(double scalar, double matrix[9]) {
 	int i;
@@ -148,6 +146,8 @@ static void process_imu() {
 		process_one_imu(dp.sen2, dp.samples, dp.range);
 		while ((ch = getchar()) >= ' ' || ch == '\n')
 			switch(ch) {
+				case 27:
+					exit(0);
 				case '\n':
 					for (i = 0; i < 6; i++)
 						accumulated_imu[i].gyro.x = accumulated_imu[i].gyro.y = accumulated_imu[i].gyro.z = 0.;
