@@ -117,9 +117,14 @@ static void redraw_crosshair(double rx, double ry, double rz, double px, double 
 
 
 void draw_grid() {
+	glColor4f(0.2f, 0.2f, 0.2f, 1.0f);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, xy_grid);
 	glDrawArrays(GL_LINES, 0, 2 * 51 * 2);
+	glVertexPointer(3, GL_FLOAT, 0, xz_grid);
+	glDrawArrays(GL_LINES, 0, 2 * 51 * 2);
+	//glVertexPointer(3, GL_FLOAT, 0, yz_grid);
+	//glDrawArrays(GL_LINES, 0, 2 * 51 * 2);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
@@ -182,6 +187,12 @@ int run_triangle () {
 
 
 void init_grid() {
-	create_grid(xy_grid, 0.2, 0., 0., -5., 0., 0., 0., 10.f, 0.f);
-	create_grid(&xy_grid[51*2], 0., 0.2, 0., 0., -5., 0., 10.f, 0.f, 0.f);
+	create_grid(xy_grid, 0.2, 0., 0., -5., -5., 0., 0., 10.f, 0.f);
+	create_grid(&xy_grid[51*2], 0., 0.2, 0., -5., -5., 0., 10.f, 0.f, 0.f);
+	
+	create_grid(xz_grid, 0.2, 0., 0., -5., 0., -5., 0., 0.f, 10.f);
+	create_grid(&xz_grid[51*2], 0., 0., .2, -5., 0., -5., 10.f, 0.f, 0.f);
+
+	create_grid(yz_grid, 0., 0.2, 0., 0., -5., -5., 0., 0.f, 10.f);
+	create_grid(&yz_grid[51*2], 0., 0., 0.2, 0., -5., -5., 0.f, 10.f, 0.f);
 }
