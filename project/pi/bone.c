@@ -138,6 +138,7 @@ void bone_recalculate() {
 	global_pos.x += avgx;
 	global_pos.y += avgy;
 	global_pos.z += avgz;
+	fprintf(stderr, "Global pos is now %lf, %lf, %lf\n", global_pos.x, global_pos.y, global_pos.z);
 
 	fprintf(stderr, "Calculated variance: %lf %lf %lf\n", maxx - minx, maxy - miny, maxz - minz);
 }
