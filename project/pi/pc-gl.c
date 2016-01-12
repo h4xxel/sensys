@@ -120,7 +120,6 @@ bool ogl_init(State *state) {
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LESS);
 	
-	atexit(ogl_exit);
 	return true;
 	
 	// Error handlers below

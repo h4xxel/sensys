@@ -40,6 +40,7 @@ double camera_yaw, camera_pitch;
 //static GLfloat inc_and_wrap_angle(GLfloat angle, GLfloat angle_inc);
 //static GLfloat inc_and_clip_distance(GLfloat distance, GLfloat distance_inc);
 static volatile int terminate;
+static State *state;
 
 
 void create_grid(Vector3f *grid, float dx, float dy, float dz, float px, float py, float pz, float lx, float ly, float lz) {
@@ -155,13 +156,17 @@ void camera_rotate(double pitch, double yaw) {
 	camera.z = RADIUS*sin(camera_yaw)*cos(camera_pitch);
 }
 
+static void _atexit_cleanup_ogl() {
+	ogl_exit(state);
+}
+
 int run_triangle () {
 	int i;
-	State *state;
 	
 	state = ogl_state_new();
 	
 	ogl_init(state);
+	atexit(_atexit_cleanup_ogl);
 	glPushMatrix();
 	for (i = 0; !terminate;) {
 		camera_apply();
