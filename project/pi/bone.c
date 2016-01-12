@@ -87,6 +87,7 @@ void bone_recalculate() {
 			imu = imu_position[bone[bone[i].joint].imu_id], imu.pos = vec3f_to_vec3(bonerender[bone[i].joint].p2);
 		this = imu_position[bone[i].imu_id];
 		bonerender[i].p1 = vec3_to_vec3f(imu.pos);
+		//fprintf(stderr, "IMU pos: %lf %lf %lf\n", imu.pos.x, imu.pos.y, imu.pos.z);
 		tmp.angle.x = clamp_angle(this.angle.x, imu.angle.x, bone[i].max_angle_x, bone[i].min_angle_x);
 		tmp.angle.y = clamp_angle(this.angle.y, imu.angle.y, bone[i].max_angle_y, bone[i].min_angle_y);
 		tmp.angle.z = clamp_angle(this.angle.z, imu.angle.z, bone[i].max_angle_z, bone[i].min_angle_z);
@@ -138,9 +139,9 @@ void bone_recalculate() {
 	global_pos.x += avgx;
 	global_pos.y += avgy;
 	global_pos.z += avgz;
-	fprintf(stderr, "Global pos is now %lf, %lf, %lf\n", global_pos.x, global_pos.y, global_pos.z);
+	//fprintf(stderr, "Global pos is now %lf, %lf, %lf\n", global_pos.x, global_pos.y, global_pos.z);
 
-	fprintf(stderr, "Calculated variance: %lf %lf %lf\n", maxx - minx, maxy - miny, maxz - minz);
+	//fprintf(stderr, "Calculated variance: %lf %lf %lf\n", maxx - minx, maxy - miny, maxz - minz);
 }
 
 

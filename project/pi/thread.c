@@ -132,9 +132,10 @@ static void process_one_imu(struct SensorData sd, int samples, int range) {
 	iv.acc.x = acc_scaling[range] * sd.acc_x * samples /** SAMPLERATE*/;
 	iv.acc.y = acc_scaling[range] * sd.acc_y * samples /** SAMPLERATE*/;
 	iv.acc.z = acc_scaling[range] * sd.acc_z * samples /** SAMPLERATE*/;
+	imu_data[i].acc = iv.acc;
 	
 	//TODO: correct angles
-	remove_gravity(&iv.acc, accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y);
+	remove_gravity(&iv.acc, accumulated_imu[i].gyro.x, -accumulated_imu[i].gyro.y);
 	fprintf(stderr, "acc: %lf %lf %lf (%lf %lf)\n", iv.acc.x, iv.acc.y, iv.acc.z, accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y);
 
 	velocity[i].x += iv.acc.x * SAMPLERATE;
