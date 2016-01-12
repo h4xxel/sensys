@@ -44,35 +44,27 @@ static void norm_vector(Vector3 *vec) {
 	vec->z /= len;
 }
 
-static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
-	double mat[9];
-	Vector3 u, rot;
-	double theta;
+static double dot_product(Vector3 *a, Vector3 *b) {
+	return a->x*b->x + a->y*b->y + a->z*b->z;
+}
+
+static Vector3 cross_product(Vector3 *a, Vector3 *b) {
+	double u1, u2, u3, v1, v2, v3;
+	Vector3 cross;
 	
-	theta = accumulated->gyro.z;
+	u1 = a->x;
+	u2 = a->y;
+	u3 = a->z;
 	
-	u = raw->acc;
-	norm_vector(&u);
+	v1 = b->x;
+	v2 = b->y;
+	v3 = b->z;
 	
-	mat[0] = cos(theta) + u.x*u.x*(1 - cos(theta));
-	mat[1] = u.x*u.y*(1 - cos(theta)) - u.z*sin(theta);
-	mat[2] = u.x*u.z*(1 - cos(theta)) + u.y*sin(theta);
+	cross.x = u2*v3 - u3*v2;
+	cross.y = u3*v1 - u1*v3;
+	cross.z = u1*v2 - u2*v1;
 	
-	mat[3] = u.y*u.x*(1 - cos(theta)) + u.z*sin(theta);
-	mat[4] = cos(theta) + u.y*u.y*(1 - cos(theta));
-	mat[5] = u.y*u.z*(1 - cos(theta)) - u.x*sin(theta);
-	
-	mat[6] = u.z*u.x*(1 - cos(theta)) - u.y*sin(theta);
-	mat[7] = u.z*u.y*(1 - cos(theta)) + u.x*sin(theta);
-	mat[8] = cos(theta) + u.z*u.z*(1 - cos(theta));
-	
-	//Thanks to: http://nghiaho.com/?page_id=846
-	rot.x = atan2(mat[7], mat[8]);
-	rot.y = atan2(-mat[6], sqrt(POW2(mat[7]) + POW2(mat[8])));
-	rot.z = atan2(mat[3], mat[0]);
-	fprintf(stderr, "%lf %lf %lf (%lf %lf %lf)\n", rot.x, rot.y, rot.z, u.x, u.y, u.z);
-	
-	accumulated->gyro = rot;
+	return cross;
 }
 
 static void scalar_dot_matrix33(double scalar, double matrix[9]) {
@@ -98,6 +90,83 @@ static void vector3_minus_vector3(Vector3 *a, Vector3 *b) {
 	a->x -= b->x;
 	a->y -= b->y;
 	a->z -= b->z;
+}
+
+
+static double vec3_len(Vector3 *a) {
+	return sqrt(POW2(a->x) + POW2(a->y) + POW2(a->z));
+}
+
+static void matrix33_plus_matrix33(double a[9], double b[9]) {
+	int i;
+	for(i = 0; i < 9; i++)
+		a[i] += b[i];
+}
+
+static void matrix33_times_matrix33(double a[9], double b[9], double res[9]) {
+	int i, j, k;
+	double sum;
+	
+	for(i = 0; i < 3; i++) {
+		for(j = 0; j < 3; j++) {
+			sum = 0;
+			for(k = 0; k < 3; k++)
+				sum += a[i*3 + k] * b[k*3 + j];
+			res[i*3 + j] = sum;
+		}
+	}
+}
+
+static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
+	Vector3 a;
+	Vector3 b = {0.0, -1.0, 0.0};
+	
+	a = raw->acc;
+	norm_vector(&a);
+	
+	//Thanks to http://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d/476311#476311
+	Vector3 cross = cross_product(&a, &b);
+	double s = vec3_len(&cross);
+	double c = dot_product(&a, &b);
+	double rot[9], v[9], v2[9];
+	Vector3 rot_vector;
+	
+	rot[0] = 1;
+	rot[1] = 0;
+	rot[2] = 0;
+	
+	rot[3] = 0;
+	rot[4] = 1;
+	rot[5] = 0;
+	
+	rot[6] = 0;
+	rot[7] = 0;
+	rot[8] = 1;
+	
+	v[0] = 0;
+	v[1] = -cross.z;
+	v[2] = cross.y;
+	
+	v[3] = cross.z;
+	v[4] = 0;
+	v[5] = -cross.x;
+	
+	v[6] = -cross.y;
+	v[7] = cross.x;
+	v[8] = 0;
+	
+	matrix33_times_matrix33(v, v, v2);
+	scalar_dot_matrix33((1 - c)/(s*s), v2);
+	
+	matrix33_plus_matrix33(rot, v);
+	matrix33_plus_matrix33(rot, v2);
+	
+	//Thanks to: http://nghiaho.com/?page_id=846
+	rot_vector.x = atan2(rot[7], rot[8]);
+	rot_vector.y = atan2(-rot[6], sqrt(POW2(rot[7]) + POW2(rot[8])));
+	rot_vector.z = atan2(rot[3], rot[0]);
+	
+	accumulated->gyro = rot_vector;
 }
 
 static void remove_gravity(Vector3 *acc, double u, double v) {
