@@ -95,7 +95,6 @@ static void remove_gravity(Vector3 *acc, double u, double v) {
 	scalar_dot_matrix33(1.0/det, rot_inv);
 	
 	matrix33_times_vector3(rot_inv, &gravity);
-	vector3_minus_vector3(acc, &gravity);
 	
 	//Oops, let's rotate some more..
 	rot_inv[0] = 1;
@@ -109,6 +108,8 @@ static void remove_gravity(Vector3 *acc, double u, double v) {
 	rot_inv[8] = 0;
 	
 	matrix33_times_vector3(rot_inv, &gravity);
+	
+	vector3_minus_vector3(acc, &gravity);
 }
 
 static void process_one_imu(struct SensorData sd, int samples, int range) {
