@@ -15,7 +15,7 @@ Vector3 global_pos;
 extern struct IMUPosition imu_position[6];
 extern struct IMUVector accumulated_imu[6];
 
-#define	GLOBAL_POSITION		1
+#define	GLOBAL_POSITION		0
 
 
 Vector3 vec3f_to_vec3(Vector3f v3f) {
@@ -90,9 +90,10 @@ void bone_recalculate() {
 		this = imu_position[bone[i].imu_id];
 		bonerender[i].p1 = vec3_to_vec3f(imu.pos);
 		//fprintf(stderr, "IMU pos: %lf %lf %lf\n", imu.pos.x, imu.pos.y, imu.pos.z);
-		tmp.angle.x = clamp_angle(this.angle.x, imu.angle.x, bone[i].max_angle_x, bone[i].min_angle_x);
-		tmp.angle.y = clamp_angle(this.angle.y, imu.angle.y, bone[i].max_angle_y, bone[i].min_angle_y);
-		tmp.angle.z = clamp_angle(this.angle.z, imu.angle.z, bone[i].max_angle_z, bone[i].min_angle_z);
+		//tmp.angle.x = clamp_angle(this.angle.x, imu.angle.x, bone[i].max_angle_x, bone[i].min_angle_x);
+		//tmp.angle.y = clamp_angle(this.angle.y, imu.angle.y, bone[i].max_angle_y, bone[i].min_angle_y);
+		//tmp.angle.z = clamp_angle(this.angle.z, imu.angle.z, bone[i].max_angle_z, bone[i].min_angle_z);
+		tmp.angle = this.angle;
 		//imu_position[bone[i].imu_id].angle = tmp.angle;
 		tmp.pos.x = bone[i].length;
 		tmp.pos.y = 0.;
