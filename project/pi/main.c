@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <math.h>
+#include <signal.h>
 #include "vector.h"
 
 #define STR(s) XSTR(s)
@@ -114,6 +115,11 @@ void get_gyro(int fd, Vector3 *vec) {
 	vec->z = z/32768.0*125.0*(1.0/SAMPRATE);
 }
 
+void sighandler(int sig) {
+	if(sig == SIGINT)
+		exit(0);
+}
+
 
 int main(int argc, char **argv) {
 	char buf[256];
@@ -130,6 +136,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}*/
 	
+	signal(SIGINT, sighandler);
 	protocol_init();
 	init_unbuffered_input();
 	

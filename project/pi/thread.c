@@ -150,8 +150,6 @@ static void process_imu() {
 		process_one_imu(dp.sen2, dp.samples, dp.range);
 		while ((ch = getchar()) >= ' ' || ch == '\n')
 			switch(ch) {
-				case 27:
-					exit(0);
 				case '\n':
 					for (i = 0; i < 6; i++)
 						accumulated_imu[i].gyro.x = accumulated_imu[i].gyro.y = accumulated_imu[i].gyro.z = 0.;
