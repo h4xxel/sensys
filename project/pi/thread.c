@@ -241,17 +241,22 @@ static void process_one_imu(struct SensorData sd, int samples, int range) {
 	iv.acc.x = acc_scaling[range] * sd.acc_x * samples /** SAMPLERATE*/;
 	iv.acc.y = acc_scaling[range] * sd.acc_y * samples /** SAMPLERATE*/;
 	iv.acc.z = acc_scaling[range] * sd.acc_z * samples /** SAMPLERATE*/;
+	imu_data[i].acc = iv.acc;
 	
 	//TODO: correct angles
-	remove_gravity(&iv.acc, accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.z);
+	remove_gravity(&iv.acc, accumulated_imu[i].gyro.x, -accumulated_imu[i].gyro.y);
+	fprintf(stderr, "acc: %lf %lf %lf (%lf %lf)\n", iv.acc.x, iv.acc.y, iv.acc.z, accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y);
 
-	velocity[i].x += imu_data[i].acc.x * SAMPLERATE;
-	velocity[i].y += imu_data[i].acc.y * SAMPLERATE;
-	velocity[i].z += imu_data[i].acc.z * SAMPLERATE;
+	velocity[i].x += iv.acc.x * SAMPLERATE;
+	velocity[i].y += iv.acc.y * SAMPLERATE;
+	velocity[i].z += iv.acc.z * SAMPLERATE;
 	
-	accumulated_imu[i].acc.x += velocity[i].x * SAMPLERATE;
+/*	accumulated_imu[i].acc.x += velocity[i].x * SAMPLERATE;
 	accumulated_imu[i].acc.y += velocity[i].y * SAMPLERATE;
-	accumulated_imu[i].acc.z += velocity[i].z * SAMPLERATE;
+	accumulated_imu[i].acc.z += velocity[i].z * SAMPLERATE;*/
+	imu_position[i].pos.x += velocity[i].x * SAMPLERATE;
+	imu_position[i].pos.y += velocity[i].y * SAMPLERATE;
+	imu_position[i].pos.z += velocity[i].z * SAMPLERATE;
 	
 	return;
 }
@@ -261,9 +266,19 @@ static void process_one_imu(struct SensorData sd, int samples, int range) {
 
 static void process_imu() {
 	struct DecodedPacket dp;
-	int ch, i;
+	int ch, i, j;
 
-	for (;;) {
+
+	dp = protocol_recv_decoded_packet();
+	process_one_imu(dp.sen1, dp.samples, dp.range);
+	process_one_imu(dp.sen2, dp.samples, dp.range);
+
+	for(i = 0; i < 6; i++) {
+		set_gyro(&accumulated_imu[i], &imu_data[i]);
+	}
+//	for(;;);
+
+	for (j = 0;; j++) {
 		dp = protocol_recv_decoded_packet();
 		process_one_imu(dp.sen1, dp.samples, dp.range);
 		process_one_imu(dp.sen2, dp.samples, dp.range);

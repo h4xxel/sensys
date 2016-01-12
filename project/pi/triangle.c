@@ -21,8 +21,13 @@
 
 #define INITIAL_ZOOM 3.0
 
+Vector3f xy_grid[(51+51) * 2];
+Vector3f xz_grid[(51+51) * 2];
+Vector3f yz_grid[(51+51) * 2];
+
 extern Vector3 gyro_data;
 extern IMUVector accumulated_imu[6];
+extern IMUPosition imu_position[6];
 extern struct BoneRender *bonerender;
 extern int bones;
 
@@ -34,6 +39,20 @@ Vector3 camera = {0.0, 0.0, INITIAL_ZOOM};
 //static GLfloat inc_and_clip_distance(GLfloat distance, GLfloat distance_inc);
 static volatile int terminate;
 static State *state;
+
+
+void create_grid(Vector3f *grid, float dx, float dy, float dz, float px, float py, float pz, float lx, float ly, float lz) {
+	int i;
+
+	for (i = 0; i < 51; i++) {
+		grid[i*2].x = px + dx * i;
+		grid[i*2+1].x = px + dx * i + lx;
+		grid[i*2].y = py + dy * i;
+		grid[i*2+1].y = py + dy * i + ly;
+		grid[i*2].z = pz + dz * i;
+		grid[i*2+1].z = pz + dz * i + lz;
+	}
+}
 
 
 /***********************************************************
@@ -48,26 +67,39 @@ static State *state;
  *
  ***********************************************************/
 
+static void redraw_crosshair(double rx, double ry, double rz, double px, double py, double pz);
 
 
 static void redraw_bones() {
-	int i;
+	int i, j;
 
 	bone_recalculate();
+	glPushMatrix();
 
-	for (i = 0; i < bones; i++) {
-		glLoadIdentity();
+//	for (i = 0; i < bones; i++) {
 		glEnableClientState(GL_VERTEX_ARRAY);
 		
 		glVertexPointer(3, GL_FLOAT, 0, bonerender);
-		glDrawArrays(GL_LINES, 0, 6);
+		glDrawArrays(GL_LINES, 0, 2 * bones);
 
 		glDisableClientState(GL_VERTEX_ARRAY);
+
+//	}
+
+	for (i = 0; i < bones; i++) {
+		if ((j = bone[i].imu_id) < 0)
+			continue;
+		redraw_crosshair(accumulated_imu[j].gyro.x, accumulated_imu[j].gyro.y, accumulated_imu[j].gyro.z, imu_position[j].pos.x, imu_position[j].pos.y, imu_position[j].pos.z);
+		//redraw_crosshair(accumulated_imu[j].gyro.x, accumulated_imu[j].gyro.y, accumulated_imu[j].gyro.z, 0.3 + 0.3 * i, 0, 0);
+
 	}
+
+	glPopMatrix();
 }
 
 
 static void redraw_crosshair(double rx, double ry, double rz, double px, double py, double pz) {
+	glPushMatrix();
 	glTranslatef(px, py, pz);
 	glRotatef(rx*180.0/M_PI, 1.f, 0, 0.0f);
 	glRotatef(ry*180.0/M_PI, 0, 1.f, 0.0f);
@@ -79,9 +111,25 @@ static void redraw_crosshair(double rx, double ry, double rz, double px, double 
 	glDrawArrays(GL_LINES, 0, 6);
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
+	glPopMatrix();
 }
 
+
+void draw_grid() {
+	glColor4f(0.2f, 0.2f, 0.2f, 1.0f);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glVertexPointer(3, GL_FLOAT, 0, xy_grid);
+	glDrawArrays(GL_LINES, 0, 2 * 51 * 2);
+	glVertexPointer(3, GL_FLOAT, 0, xz_grid);
+	glDrawArrays(GL_LINES, 0, 2 * 51 * 2);
+	//glVertexPointer(3, GL_FLOAT, 0, yz_grid);
+	//glDrawArrays(GL_LINES, 0, 2 * 51 * 2);
+	glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+
 static void camera_apply() {
+	#if 1
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -91,6 +139,7 @@ static void camera_apply() {
 	gluPerspective(45.0, 1.0, 0.001, 100.0);
 	gluLookAt(camera.x, camera.y, camera.z, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	glPushMatrix();
+	#endif
 }
 
 void camera_move(double x, double y, double z) {
@@ -135,8 +184,9 @@ int run_triangle () {
 	glPushMatrix();
 	for (i = 0; !terminate;) {
 		camera_apply();
-		for (i = 0; i < 2; i++)
-			redraw_crosshair(accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y, accumulated_imu[i].gyro.z, accumulated_imu[i].acc.x, accumulated_imu[i].acc.y, accumulated_imu[i].acc.z);
+		draw_grid();
+	//	for (i = 0; i < 2; i++)
+	//		redraw_crosshair(accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y, accumulated_imu[i].gyro.z, imu_position[i].pos.x, imu_position[i].pos.y, imu_position[i].pos.z);
 		redraw_bones();
 		ogl_flip(state);
 	}
@@ -144,3 +194,14 @@ int run_triangle () {
 	return 0;
 }
 
+
+void init_grid() {
+	create_grid(xy_grid, 0.2, 0., 0., -5., -5., 0., 0., 10.f, 0.f);
+	create_grid(&xy_grid[51*2], 0., 0.2, 0., -5., -5., 0., 10.f, 0.f, 0.f);
+	
+	create_grid(xz_grid, 0.2, 0., 0., -5., 0., -5., 0., 0.f, 10.f);
+	create_grid(&xz_grid[51*2], 0., 0., .2, -5., 0., -5., 10.f, 0.f, 0.f);
+
+	create_grid(yz_grid, 0., 0.2, 0., 0., -5., -5., 0., 0.f, 10.f);
+	create_grid(&yz_grid[51*2], 0., 0., 0.2, 0., -5., -5., 0.f, 10.f, 0.f);
+}

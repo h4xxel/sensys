@@ -15,6 +15,8 @@ Vector3 global_pos;
 extern struct IMUPosition imu_position[6];
 extern struct IMUVector accumulated_imu[6];
 
+#define	GLOBAL_POSITION		1
+
 
 Vector3 vec3f_to_vec3(Vector3f v3f) {
 	Vector3 v3;
@@ -87,10 +89,11 @@ void bone_recalculate() {
 			imu = imu_position[bone[bone[i].joint].imu_id], imu.pos = vec3f_to_vec3(bonerender[bone[i].joint].p2);
 		this = imu_position[bone[i].imu_id];
 		bonerender[i].p1 = vec3_to_vec3f(imu.pos);
+		//fprintf(stderr, "IMU pos: %lf %lf %lf\n", imu.pos.x, imu.pos.y, imu.pos.z);
 		tmp.angle.x = clamp_angle(this.angle.x, imu.angle.x, bone[i].max_angle_x, bone[i].min_angle_x);
 		tmp.angle.y = clamp_angle(this.angle.y, imu.angle.y, bone[i].max_angle_y, bone[i].min_angle_y);
 		tmp.angle.z = clamp_angle(this.angle.z, imu.angle.z, bone[i].max_angle_z, bone[i].min_angle_z);
-		imu_position[bone[i].imu_id].angle = tmp.angle;
+		//imu_position[bone[i].imu_id].angle = tmp.angle;
 		tmp.pos.x = bone[i].length;
 		tmp.pos.y = 0.;
 		tmp.pos.z = 0.;
@@ -102,9 +105,9 @@ void bone_recalculate() {
 		tmp.pos.x = bone[i].imu_pos;
 		tmp.pos.y = tmp.pos.z = 0.;
 		calc_pos[i] = calculate_rotation_offsets(tmp.angle, tmp.pos);
-		calc_pos[i].x = bonerender[i].p1.x;
-		calc_pos[i].y = bonerender[i].p1.y;
-		calc_pos[i].z = bonerender[i].p1.z;
+		calc_pos[i].x += bonerender[i].p1.x;
+		calc_pos[i].y += bonerender[i].p1.y;
+		calc_pos[i].z += bonerender[i].p1.z;
 		calc_off[i].x = calc_pos[i].x - this.pos.x;
 		calc_off[i].y = calc_pos[i].y - this.pos.y;
 		calc_off[i].z = calc_pos[i].z - this.pos.z;
@@ -125,9 +128,13 @@ void bone_recalculate() {
 
 	double avgx, avgy, avgz;
 	/* TODO: Better averageing function (weighted?) */
+	#if GLOBAL_POSITION
 	avgx = (maxx - minx) / 2 + minx;
 	avgy = (maxy - miny) / 2 + miny;
 	avgz = (maxz - minz) / 2 + minz;
+	#else
+	avgx = avgy = avgz = 0;
+	#endif
 
 	for (i = 0; i < bones; i++) {
 		imu_position[bone[i].imu_id].pos.x = calc_pos[i].x + avgx;
@@ -135,7 +142,14 @@ void bone_recalculate() {
 		imu_position[bone[i].imu_id].pos.z = calc_pos[i].z + avgz;
 	}
 
-	fprintf(stderr, "Calculated variance: %lf %lf %lf\n", maxx - minx, maxy - miny, maxz - minz);
+	#if GLOBAL_POSITION
+	global_pos.x += avgx;
+	global_pos.y += avgy;
+	global_pos.z += avgz;
+	#endif
+	//fprintf(stderr, "Global pos is now %lf, %lf, %lf\n", global_pos.x, global_pos.y, global_pos.z);
+
+	//fprintf(stderr, "Calculated variance: %lf %lf %lf\n", maxx - minx, maxy - miny, maxz - minz);
 }
 
 

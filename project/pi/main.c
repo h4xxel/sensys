@@ -116,7 +116,7 @@ void get_gyro(int fd, Vector3 *vec) {
 }
 
 void sighandler(int sig) {
-	if(sig == SIGINT)
+//	if(sig == SIGINT)
 		exit(0);
 }
 
@@ -137,6 +137,7 @@ int main(int argc, char **argv) {
 	}*/
 	
 	signal(SIGINT, sighandler);
+	init_grid();
 	protocol_init();
 	init_unbuffered_input();
 	
