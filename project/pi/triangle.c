@@ -19,17 +19,15 @@
 	#define M_PI 3.141592654
 #endif
 
-#define RADIUS 3.0
-
+#define INITIAL_ZOOM 3.0
 
 extern Vector3 gyro_data;
 extern IMUVector accumulated_imu[6];
 extern struct BoneRender *bonerender;
 extern int bones;
 
-Vector3 camera = {0.0, 0.0, RADIUS};
-double camera_yaw, camera_pitch;
-
+double camera_yaw, camera_pitch, camera_zoom = INITIAL_ZOOM;
+Vector3 camera = {0.0, 0.0, INITIAL_ZOOM};
 
 //static void init_ogl(CUBE_STATE_T *state);
 //static GLfloat inc_and_wrap_angle(GLfloat angle, GLfloat angle_inc);
@@ -108,9 +106,19 @@ void camera_rotate(double pitch, double yaw) {
 		pitch = M_PI;
 	if(pitch < 0.0)
 		pitch = 0.0;
-	camera.y = RADIUS*cos(camera_yaw);
-	camera.x = RADIUS*sin(camera_yaw)*sin(camera_pitch);
-	camera.z = RADIUS*sin(camera_yaw)*cos(camera_pitch);
+	camera.y = camera_zoom*cos(camera_yaw);
+	camera.x = camera_zoom*sin(camera_yaw)*sin(camera_pitch);
+	camera.z = camera_zoom*sin(camera_yaw)*cos(camera_pitch);
+}
+
+void camera_zoom_in(double zoom) {
+	camera_zoom += zoom;
+	if(camera_zoom < 0.5)
+		camera_zoom = 0.5;
+
+	camera.y = camera_zoom*cos(camera_yaw);
+	camera.x = camera_zoom*sin(camera_yaw)*sin(camera_pitch);
+	camera.z = camera_zoom*sin(camera_yaw)*cos(camera_pitch);
 }
 
 static void _atexit_cleanup_ogl() {

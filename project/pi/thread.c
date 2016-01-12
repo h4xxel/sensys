@@ -286,6 +286,13 @@ static void process_imu() {
 				case 'd':
 					camera_rotate(-2.0*M_PI/100.0, 0.0);
 					break;
+				
+				case '+':
+					camera_zoom_in(-0.5);
+					break;
+				case '-':
+					camera_zoom_in(0.5);
+					break;
 			}
 	}
 }

@@ -18,5 +18,6 @@ void ogl_exit(State *state);
 
 void camera_move(double x, double y, double z);
 void camera_rotate(double yaw, double pitch);
+void camera_zoom_in(double zoom);
 
 #endif
