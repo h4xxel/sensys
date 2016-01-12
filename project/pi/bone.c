@@ -15,6 +15,8 @@ Vector3 global_pos;
 extern struct IMUPosition imu_position[6];
 extern struct IMUVector accumulated_imu[6];
 
+#define	GLOBAL_POSITION		1
+
 
 Vector3 vec3f_to_vec3(Vector3f v3f) {
 	Vector3 v3;
@@ -91,7 +93,7 @@ void bone_recalculate() {
 		tmp.angle.x = clamp_angle(this.angle.x, imu.angle.x, bone[i].max_angle_x, bone[i].min_angle_x);
 		tmp.angle.y = clamp_angle(this.angle.y, imu.angle.y, bone[i].max_angle_y, bone[i].min_angle_y);
 		tmp.angle.z = clamp_angle(this.angle.z, imu.angle.z, bone[i].max_angle_z, bone[i].min_angle_z);
-		imu_position[bone[i].imu_id].angle = tmp.angle;
+		//imu_position[bone[i].imu_id].angle = tmp.angle;
 		tmp.pos.x = bone[i].length;
 		tmp.pos.y = 0.;
 		tmp.pos.z = 0.;
@@ -126,9 +128,13 @@ void bone_recalculate() {
 
 	double avgx, avgy, avgz;
 	/* TODO: Better averageing function (weighted?) */
+	#if GLOBAL_POSITION
 	avgx = (maxx - minx) / 2 + minx;
 	avgy = (maxy - miny) / 2 + miny;
 	avgz = (maxz - minz) / 2 + minz;
+	#else
+	avgx = avgy = avgz = 0;
+	#endif
 
 	for (i = 0; i < bones; i++) {
 		imu_position[bone[i].imu_id].pos.x = calc_pos[i].x + avgx;
@@ -136,9 +142,11 @@ void bone_recalculate() {
 		imu_position[bone[i].imu_id].pos.z = calc_pos[i].z + avgz;
 	}
 
+	#if GLOBAL_POSITION
 	global_pos.x += avgx;
 	global_pos.y += avgy;
 	global_pos.z += avgz;
+	#endif
 	//fprintf(stderr, "Global pos is now %lf, %lf, %lf\n", global_pos.x, global_pos.y, global_pos.z);
 
 	//fprintf(stderr, "Calculated variance: %lf %lf %lf\n", maxx - minx, maxy - miny, maxz - minz);

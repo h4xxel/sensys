@@ -92,6 +92,7 @@ static void redraw_bones() {
 		if ((j = bone[i].imu_id) < 0)
 			continue;
 		redraw_crosshair(accumulated_imu[j].gyro.x, accumulated_imu[j].gyro.y, accumulated_imu[j].gyro.z, imu_position[j].pos.x, imu_position[j].pos.y, imu_position[j].pos.z);
+		//redraw_crosshair(accumulated_imu[j].gyro.x, accumulated_imu[j].gyro.y, accumulated_imu[j].gyro.z, 0.3 + 0.3 * i, 0, 0);
 
 	}
 
@@ -176,8 +177,8 @@ int run_triangle () {
 	for (i = 0; !terminate;) {
 		camera_apply();
 		draw_grid();
-		//for (i = 0; i < 2; i++)
-		//	redraw_crosshair(accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y, accumulated_imu[i].gyro.z, imu_position[i].pos.x, imu_position[i].pos.y, imu_position[i].pos.z);
+	//	for (i = 0; i < 2; i++)
+	//		redraw_crosshair(accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y, accumulated_imu[i].gyro.z, imu_position[i].pos.x, imu_position[i].pos.y, imu_position[i].pos.z);
 		redraw_bones();
 		ogl_flip(state);
 	}

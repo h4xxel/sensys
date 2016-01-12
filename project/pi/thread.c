@@ -70,6 +70,7 @@ static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
 	rot.x = atan2(mat[7], mat[8]);
 	rot.y = atan2(-mat[6], sqrt(POW2(mat[7]) + POW2(mat[8])));
 	rot.z = atan2(mat[3], mat[0]);
+	fprintf(stderr, "%lf %lf %lf (%lf %lf %lf)\n", rot.x, rot.y, rot.z, u.x, u.y, u.z);
 	
 	accumulated->gyro = rot;
 }
@@ -196,9 +197,19 @@ static void process_one_imu(struct SensorData sd, int samples, int range) {
 
 static void process_imu() {
 	struct DecodedPacket dp;
-	int ch, i;
+	int ch, i, j;
 
-	for (;;) {
+
+	dp = protocol_recv_decoded_packet();
+	process_one_imu(dp.sen1, dp.samples, dp.range);
+	process_one_imu(dp.sen2, dp.samples, dp.range);
+
+	for(i = 0; i < 6; i++) {
+		set_gyro(&accumulated_imu[i], &imu_data[i]);
+	}
+//	for(;;);
+
+	for (j = 0;; j++) {
 		dp = protocol_recv_decoded_packet();
 		process_one_imu(dp.sen1, dp.samples, dp.range);
 		process_one_imu(dp.sen2, dp.samples, dp.range);
