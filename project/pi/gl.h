@@ -5,10 +5,12 @@
 
 #ifdef HAVE_LIBBCM_HOST
 #include "GLES/gl.h"
-void gluLookAt(float eyeX, float eyeY, float eyez, float centerX, float centerY, float centerZ, float upX, float upY, float upZ);
-void gluPerspective(float fovy, float aspect, float zNear, float zFar);
+#include <GLES/glu.h>
+//void gluLookAt(float eyeX, float eyeY, float eyez, float centerX, float centerY, float centerZ, float upX, float upY, float upZ);
+//void gluPerspective(float fovy, float aspect, float zNear, float zFar);
 #else
 #include <GL/glx.h>
+#include <GL/glu.h>
 #endif
 
 typedef void State;
@@ -21,5 +23,11 @@ void ogl_exit(State *state);
 void camera_move(double x, double y, double z);
 void camera_rotate(double yaw, double pitch);
 void camera_zoom_in(double zoom);
+void camera_reset();
+
+void init_grid();
+
+void launch_worker();
+int run_triangle();
 
 #endif

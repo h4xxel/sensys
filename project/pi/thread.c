@@ -174,18 +174,20 @@ static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
 void recal_gyro() {
 	int i;
 
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < 6; i++) {
 		set_gyro(&accumulated_imu[i], &imu_data[i]);
+		gravity[i].acc = imu_data[i].acc;
+	}
 	return;
 	
 }
 
 
-static void remove_gravity(Vector3 *acc, double u, double v) {
-	Vector3 gravity = {0.0, -1.0, 0.0};
+static Vector3 remove_gravity(Vector3 *acc, double u, double v) {
+	Vector3 grav = {0.0, -1.0, 0.0};
 	
 	double a, b, c, d, e, f, g, h, i;
-	double det, res;
+	double det;
 	
 	double rot_inv[9];
 	
@@ -215,7 +217,7 @@ static void remove_gravity(Vector3 *acc, double u, double v) {
 	
 	scalar_dot_matrix33(1.0/det, rot_inv);
 	
-	matrix33_times_vector3(rot_inv, &gravity);
+	matrix33_times_vector3(rot_inv, &grav);
 	
 	//Oops, let's rotate some more..
 	rot_inv[0] = 1;
@@ -228,9 +230,10 @@ static void remove_gravity(Vector3 *acc, double u, double v) {
 	rot_inv[7] = -1;
 	rot_inv[8] = 0;
 	
-	matrix33_times_vector3(rot_inv, &gravity);
+	matrix33_times_vector3(rot_inv, &grav);
 	
-	vector3_minus_vector3(acc, &gravity);
+	vector3_minus_vector3(acc, &grav);
+	return grav;
 }
 
 static void process_one_imu(struct SensorData sd, int samples, int range) {
@@ -256,7 +259,8 @@ static void process_one_imu(struct SensorData sd, int samples, int range) {
 	imu_data[i].acc = iv.acc;
 	
 	//TODO: correct angles
-	remove_gravity(&iv.acc, accumulated_imu[i].gyro.x, -accumulated_imu[i].gyro.y);
+	Vector3 grav = remove_gravity(&iv.acc, accumulated_imu[i].gyro.x, -accumulated_imu[i].gyro.y);
+	gravity[sd.sensor_id].gyro = grav;
 	//fprintf(stderr, "acc: %lf %lf %lf (%lf %lf)\n", iv.acc.x, iv.acc.y, iv.acc.z, accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y);
 
 	velocity[i].x += iv.acc.x * SAMPLERATE;
@@ -330,25 +334,13 @@ static void process_imu() {
 
 
 void *sensor_data_worker(void *arg) {
-	Vector3 vec;
-
 	process_imu();
-
-	#if 0
-	for (;;) {
-		get_gyro(serial_fd, &vec);
-		gyro_data.x += (vec.x);
-		gyro_data.y += (-vec.z);
-		gyro_data.z += (vec.y);
-	}
-	#endif
+	
+	return NULL;
 }
 
 
-void launch_worker(int fd) {
+void launch_worker() {
 	pthread_t thr;
-
-	serial_fd = fd;
-
 	pthread_create(&thr, NULL, sensor_data_worker, NULL);
 }

@@ -203,14 +203,12 @@ static void _atexit_cleanup_ogl() {
 }
 
 int run_triangle () {
-	int i;
-	
 	state = ogl_state_new();
 	
 	ogl_init(state);
 	atexit(_atexit_cleanup_ogl);
 	glPushMatrix();
-	for (i = 0; !terminate;) {
+	while(!terminate) {
 		camera_apply();
 		draw_grid();
 	//	for (i = 0; i < 2; i++)
