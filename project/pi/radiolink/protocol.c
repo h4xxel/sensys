@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <unistd.h>
 #include <time.h>
 #include "radiolink.h"
 #include "protocol.h"
@@ -18,6 +19,7 @@ static void __print_sensor(struct SensorData sd) {
 }
 
 
+#if 0
 static void __print_packet(struct DecodedPacket dp) {
 	fprintf(stderr, "Sequence %i, samples: %i, range: %i\n", dp.sequence, dp.samples, dp.range);
 	
@@ -27,7 +29,7 @@ static void __print_packet(struct DecodedPacket dp) {
 	if (dp.sen2.sensor_id < 7)
 		__print_sensor(dp.sen2);
 }
-
+#endif
 
 static void __fill_in_sensordata(struct SensorData *sd, int16_t *data) {
 	sd->gyro_x = data[0];
@@ -65,27 +67,11 @@ struct DecodedPacket protocol_recv_decoded_packet() {
 
 
 int protocol_init() {
-	struct DecodedPacket dp;
-	uint8_t data[32];
-	time_t t = 0;
-	int cnt = 0;
 	wiringPiSetup();
 	wiringPiSPISetup(0, 8000000);
 	sleep(1);
 	
 	radiolink_init(26);
-
-	#if 0
-	for (;;cnt++) {
-		if (t != time(NULL))
-			fprintf(stderr, "%i packets this second\n", cnt), cnt = 0, t = time(NULL);
-		radiolink_recv(26, data);
-//		printf("got data: %s\n", data);
-		printf("Time is now %i\n", timer_now());
-		dp = __decode_packet(data);
-		__print_packet(dp);
-	}
-	#endif
 
 	return 0;
 }
