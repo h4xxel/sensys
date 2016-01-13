@@ -120,7 +120,7 @@ static void matrix33_times_matrix33(double a[9], double b[9], double res[9]) {
 
 static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
 	Vector3 a;
-	Vector3 b = {0.0, 0., 1.0};
+	/*Vector3 b = {0.0, 0., 1.0};
 	
 	a = raw->acc;
 	norm_vector(&a);
@@ -167,7 +167,19 @@ static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
 	rot_vector.y = -(atan2(-rot[6], sqrt(POW2(rot[7]) + POW2(rot[8]))));
 	rot_vector.z = (atan2(rot[3], rot[0]));
 	
-	accumulated->gyro = rot_vector;
+	accumulated->gyro = rot_vector;*/
+	
+	a = raw->acc;
+	norm_vector(&a);
+	
+	double theta, phi;
+	
+	phi = acos(a.x) + M_PI/2.0;
+	theta = atan2(a.y, a.z);
+	
+	
+	accumulated->gyro.x = phi;
+	accumulated->gyro.y = theta;
 }
 
 
