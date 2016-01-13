@@ -179,7 +179,7 @@ static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
 	
 	
 	accumulated->gyro.x = phi;
-	accumulated->gyro.y = theta;
+	accumulated->gyro.y = theta + M_PI;
 }
 
 
