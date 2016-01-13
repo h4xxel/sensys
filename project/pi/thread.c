@@ -169,18 +169,19 @@ static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
 	rot_vector.z = (atan2(rot[3], rot[0]));
 	
 	accumulated->gyro = rot_vector;
-	#endif	
+	#else
 	a = raw->acc;
 	norm_vector(&a);
 	
 	double theta, phi;
 	
-	phi = acos(a.x) + M_PI/2;
-	theta = atan2(a.y, a.z);
+	theta = acos(a.x) - M_PI/2.0;
+	phi = atan2(a.y, a.z);
 	
 	
-	accumulated->gyro.x = phi;
-	accumulated->gyro.y = theta;
+	accumulated->gyro.x = -phi;
+	accumulated->gyro.y = -theta;
+	#endif
 }
 
 
@@ -188,7 +189,13 @@ void recal_gyro() {
 	int i;
 
 	for (i = 0; i < 6; i++) {
+		#if 1
 		set_gyro(&accumulated_imu[i], &imu_data[i]);
+		#else
+		accumulated_imu[i].gyro.x = 0.0;
+		accumulated_imu[i].gyro.y = 0.0;
+		accumulated_imu[i].gyro.z = 0.0;
+		#endif
 	}
 	return;
 	
@@ -256,7 +263,7 @@ static void process_one_imu(struct SensorData sd, int samples, int range) {
 	if (sd.sensor_id > 5)
 		return;
 	
-	iv.gyro.x = gyro_scaling[range] * sd.gyro_x * samples * SAMPLERATE;
+	iv.gyro.x = -gyro_scaling[range] * sd.gyro_x * samples * SAMPLERATE;
 	iv.gyro.y = gyro_scaling[range] * sd.gyro_y * samples * SAMPLERATE;
 	iv.gyro.z = gyro_scaling[range] * sd.gyro_z * samples * SAMPLERATE;
 

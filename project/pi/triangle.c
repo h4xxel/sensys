@@ -164,6 +164,7 @@ static void camera_apply() {
         
 	gluPerspective(45.0, 1.0, 0.001, 100.0);
 	gluLookAt(camera.x, camera.y, camera.z, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	glRotatef(90, 1.0, 0.0, 0.0);
 	glPushMatrix();
 	#endif
 }
