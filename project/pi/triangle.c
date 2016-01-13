@@ -224,6 +224,11 @@ int run_triangle () {
 }
 
 
+void print_camera() {
+	fprintf(stdout, "camera: %lf %lf %lf\n", camera.x, camera.y, camera.z);
+}
+
+
 void init_grid() {
 	glLineWidth(8);
 	create_grid(xy_grid, 0.2, 0., 0., -5., -5., 0., 0., 10.f, 0.f);

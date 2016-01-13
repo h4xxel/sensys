@@ -25,6 +25,7 @@ void camera_rotate(double yaw, double pitch);
 void camera_zoom_in(double zoom);
 void camera_reset();
 
+void print_camera();
 void init_grid();
 
 void launch_worker();
