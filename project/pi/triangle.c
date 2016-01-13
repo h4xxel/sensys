@@ -225,7 +225,7 @@ int run_triangle () {
 
 
 void print_camera() {
-	fprintf(stdout, "camera: %lf %lf %lf\n", camera.x, camera.y, camera.z);
+	fprintf(stdout, "camera: %lf %lf %lf\n", camera_yaw, camera_pitch, camera_zoom);
 }
 
 
