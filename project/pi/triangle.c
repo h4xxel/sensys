@@ -118,8 +118,10 @@ static void redraw_crosshair(double rx, double ry, double rz, double px, double 
 
 static void draw_line(Vector3 *start, Vector3 *end) {
 	uint8_t color[8] = {0, 0, 0, 255, 255, 255, 255, 255};
-	float point[6] = {start->x, start->y, start->z, end->x, end->y, end->z};
+	float point[6] = {0.0, 0.0, 0.0, end->x, end->y, end->z};
 	
+	glPushMatrix();
+	glTranslatef(start->x, start->y, start->z);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 	
@@ -130,6 +132,7 @@ static void draw_line(Vector3 *start, Vector3 *end) {
 	
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
+	glPopMatrix();
 }
 
 void draw_grid() {
