@@ -11,15 +11,13 @@
 #include <wiringPiSPI.h>
 
 
-
+#if 0
 static void __print_sensor(struct SensorData sd) {
 	fprintf(stderr,"Gyro %i:	%i, %i, %i\n", sd.sensor_id, sd.gyro_x, sd.gyro_y, sd.gyro_z);
 	fprintf(stderr,"Acc %i:		%i, %i, %i\n", sd.sensor_id, sd.acc_x, sd.acc_y, sd.acc_z);
 	return;
 }
 
-
-#if 0
 static void __print_packet(struct DecodedPacket dp) {
 	fprintf(stderr, "Sequence %i, samples: %i, range: %i\n", dp.sequence, dp.samples, dp.range);
 	
