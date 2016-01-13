@@ -31,6 +31,8 @@ extern IMUPosition imu_position[6];
 extern struct BoneRender *bonerender;
 extern int bones;
 extern IMUVector gravity[6];
+extern IMUVector imu_data[6];
+extern Vector3 accel_no_grav[6];
 
 double camera_yaw, camera_pitch, camera_zoom = INITIAL_ZOOM;
 Vector3 camera = {0.0, 0.0, INITIAL_ZOOM};
@@ -93,6 +95,7 @@ static void redraw_bones() {
 		
 		draw_line(&imu_position[j].pos, &gravity[j].acc, 0, 0, 255);
 		draw_line(&imu_position[j].pos, &gravity[j].gyro, 0 ,255, 0);
+		draw_line(&imu_position[j].pos, &accel_no_grav[j], 255, 0, 0);
 		
 	}
 
@@ -185,7 +188,8 @@ void camera_rotate(double pitch, double yaw) {
 
 
 void camera_reset() {
-	camera_yaw = camera_pitch = 0.00001;
+	camera_yaw = -1.350875;
+	camera_pitch = 0.753992;
 	camera_zoom = INITIAL_ZOOM;
 	camera_rotate(0, 0);
 }

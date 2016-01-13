@@ -22,7 +22,7 @@ IMUPosition imu_position[6];
 IMUVector accumulated_imu[6];
 IMUVector imu_data[6];
 IMUVector gravity[6];
-
+Vector3 accel_no_grav[6];
 
 double acc_scaling[4] = { 2./32767, 2./32767, 4./32767, 8./32767 };
 double gyro_scaling[4] = { (125.*M_PI/180.0)/32767, (250.*M_PI/180.0)/32767, (500.*M_PI/180.0)/32767, (1000.*M_PI/180.0)/32767 };
@@ -174,7 +174,7 @@ static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
 	
 	double theta, phi;
 	
-	phi = acos(a.x) - M_PI/2;
+	phi = acos(a.x) + M_PI/2;
 	theta = atan2(a.y, a.z);
 	
 	
@@ -240,7 +240,7 @@ static Vector3 remove_gravity(Vector3 *acc, double u, double v) {
 	rot_inv[6] = 0;
 	rot_inv[7] = -1;
 	rot_inv[8] = 0;
-	
+
 	matrix33_times_vector3(rot_inv, &grav);
 	
 	vector3_minus_vector3(acc, &grav);
@@ -270,9 +270,10 @@ static void process_one_imu(struct SensorData sd, int samples, int range) {
 	imu_data[i].acc = iv.acc;
 	
 	//TODO: correct angles
-	Vector3 grav = remove_gravity(&iv.acc, accumulated_imu[i].gyro.x, -accumulated_imu[i].gyro.y);
+	Vector3 grav = remove_gravity(&iv.acc, -accumulated_imu[i].gyro.x, -accumulated_imu[i].gyro.y);
 	gravity[sd.sensor_id].gyro = grav;
 	gravity[sd.sensor_id].acc = imu_data[sd.sensor_id].acc;
+	accel_no_grav[sd.sensor_id] = iv.acc;
 	//fprintf(stderr, "acc: %lf %lf %lf (%lf %lf)\n", iv.acc.x, iv.acc.y, iv.acc.z, accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y);
 
 	velocity[i].x += iv.acc.x * SAMPLERATE;
