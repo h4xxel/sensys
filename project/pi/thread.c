@@ -342,6 +342,9 @@ static void process_imu() {
 				case 'd':
 					camera_rotate(-2.0*M_PI/100.0, 0.0);
 					break;
+				case 'p':
+					print_camera();
+					break;
 				case 'z':
 					camera_reset();
 					break;
