@@ -8,9 +8,9 @@
 #include "radiolink/protocol.h"
 #include "radiolink/radiolink.h"
 #include "vector.h"
-#define	SAMPLERATE	(1./50)
+#include "linalg.h"
 
-#define POW2(x) ((x)*(x))
+#define	SAMPLERATE	(1./50)
 
 #define G_THRESHOLD 0.1
 
@@ -38,143 +38,12 @@ static void calibrate_gyro(IMUVector *accumulated, IMUVector *raw) {
 }
 */
 
-static void norm_vector(Vector3 *vec) {
-	double len = sqrt(POW2(vec->x) + POW2(vec->y) + POW2(vec->z));
-	
-	vec->x /= len;
-	vec->y /= len;
-	vec->z /= len;
-}
-
-static double dot_product(Vector3 *a, Vector3 *b) {
-	return a->x*b->x + a->y*b->y + a->z*b->z;
-}
-
-static Vector3 cross_product(Vector3 *a, Vector3 *b) {
-	double u1, u2, u3, v1, v2, v3;
-	Vector3 cross;
-	
-	u1 = a->x;
-	u2 = a->y;
-	u3 = a->z;
-	
-	v1 = b->x;
-	v2 = b->y;
-	v3 = b->z;
-	
-	cross.x = u2*v3 - u3*v2;
-	cross.y = u3*v1 - u1*v3;
-	cross.z = u1*v2 - u2*v1;
-	
-	return cross;
-}
-
-static void scalar_dot_matrix33(double scalar, double matrix[9]) {
-	int i;
-	
-	for(i = 0; i < 9; i++)
-		matrix[i] *= scalar;
-}
-
-static void matrix33_times_vector3(double matrix[9], Vector3 *vec) {
-	double x, y, z;
-	
-	x = vec->x;
-	y = vec->y;
-	z = vec->z;
-	
-	vec->x = (matrix[0]*x + matrix[1]*y + matrix[2]*z);
-	vec->y = (matrix[3]*x + matrix[4]*y + matrix[5]*z);
-	vec->z = (matrix[6]*x + matrix[7]*y + matrix[8]*z);
-}
-
-static void vector3_minus_vector3(Vector3 *a, Vector3 *b) {
-	a->x -= b->x;
-	a->y -= b->y;
-	a->z -= b->z;
-}
-
-
-static double vec3_len(Vector3 *a) {
-	return sqrt(POW2(a->x) + POW2(a->y) + POW2(a->z));
-}
-
-static void matrix33_plus_matrix33(double a[9], double b[9]) {
-	int i;
-	for(i = 0; i < 9; i++)
-		a[i] += b[i];
-}
-
-static void matrix33_times_matrix33(double a[9], double b[9], double res[9]) {
-	int i, j, k;
-	double sum;
-	
-	for(i = 0; i < 3; i++) {
-		for(j = 0; j < 3; j++) {
-			sum = 0;
-			for(k = 0; k < 3; k++)
-				sum += a[i*3 + k] * b[k*3 + j];
-			res[i*3 + j] = sum;
-		}
-	}
-}
-
 static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
 	Vector3 a;
-	#if 0
-	Vector3 b = {0.0, 0., 1.0};
-	
-	a = raw->acc;
-	norm_vector(&a);
-	
-	//Thanks to http://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d/476311#476311
-	Vector3 cross = cross_product(&a, &b);
-	double s = vec3_len(&cross);
-	double c = dot_product(&a, &b);
-	double rot[9], v[9], v2[9];
-	Vector3 rot_vector;
-	
-	rot[0] = 1;
-	rot[1] = 0;
-	rot[2] = 0;
-	
-	rot[3] = 0;
-	rot[4] = 1;
-	rot[5] = 0;
-	
-	rot[6] = 0;
-	rot[7] = 0;
-	rot[8] = 1;
-	
-	v[0] = 0;
-	v[1] = -cross.z;
-	v[2] = cross.y;
-	
-	v[3] = cross.z;
-	v[4] = 0;
-	v[5] = -cross.x;
-	
-	v[6] = -cross.y;
-	v[7] = cross.x;
-	v[8] = 0;
-	
-	matrix33_times_matrix33(v, v, v2);
-	scalar_dot_matrix33((1 - c)/(s*s), v2);
-	
-	matrix33_plus_matrix33(rot, v);
-	matrix33_plus_matrix33(rot, v2);
-	
-	//Thanks to: http://nghiaho.com/?page_id=846
-	rot_vector.x = (atan2(rot[7], rot[8]));
-	rot_vector.y = -(atan2(-rot[6], sqrt(POW2(rot[7]) + POW2(rot[8]))));
-	rot_vector.z = (atan2(rot[3], rot[0]));
-	
-	accumulated->gyro = rot_vector;
-	#else
-	a = raw->acc;
-	norm_vector(&a);
-	
 	double theta, phi;
+	
+	a = raw->acc;
+	norm_vector(&a);
 	
 	theta = acos(a.x) - M_PI/2.0;
 	phi = atan2(a.y, a.z);
@@ -182,7 +51,6 @@ static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
 	
 	accumulated->gyro.x = -phi;
 	accumulated->gyro.y = -theta;
-	#endif
 }
 
 
@@ -206,11 +74,7 @@ void recal_gyro() {
 static Vector3 remove_gravity(Vector3 *acc, double u, double v) {
 	Vector3 grav = {0.0, -1.0, 0.0};
 	
-	double a, b, c, d, e, f, g, h, i;
-	double det;
-
 	double rot[9];
-	double rot_inv[9];
 
 	rot[0] = cos(v);
 	rot[1] = -sin(v);
@@ -222,36 +86,20 @@ static Vector3 remove_gravity(Vector3 *acc, double u, double v) {
 	rot[7] = sin(u)*cos(v);
  	rot[8]= cos(u);
 	
-	det = a*e*i - a*f*h - b*d*i + b*f*g + c*d*h - c*e*g;
-	
-	rot_inv[0] = e*i - f*h;
-	rot_inv[1] = c*h - b*i;
-	rot_inv[2] = b*f - c*e;
-	
-	rot_inv[3] = f*g - d*i;
-	rot_inv[4] = a*i - c*g;
-	rot_inv[5] = c*d - a*f;
-	
-	rot_inv[6] = d*h - e*g;
-	rot_inv[7] = b*g - a*h;
-	rot_inv[8] = a*e - b*d;
-	
-	scalar_dot_matrix33(1.0/det, rot_inv);
-	
 	matrix33_times_vector3(rot, &grav);
 	
 	//Oops, let's rotate some more..
-	rot_inv[0] = 1;
-	rot_inv[1] = 0;
-	rot_inv[2] = 0;
-	rot_inv[3] = 0;
-	rot_inv[4] = 0;
-	rot_inv[5] = 1;
-	rot_inv[6] = 0;
-	rot_inv[7] = -1;
-	rot_inv[8] = 0;
+	rot[0] = 1;
+	rot[1] = 0;
+	rot[2] = 0;
+	rot[3] = 0;
+	rot[4] = 0;
+	rot[5] = 1;
+	rot[6] = 0;
+	rot[7] = -1;
+	rot[8] = 0;
 
-	matrix33_times_vector3(rot_inv, &grav);
+	matrix33_times_vector3(rot, &grav);
 		
 	vector3_minus_vector3(acc, &grav);
 	return grav;

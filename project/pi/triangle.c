@@ -9,15 +9,7 @@
 #include "vector.h"
 #include "bone.h"
 
-#include "cube_texture_and_coords.h"
-
-#define PATH "./"
-
-#define IMAGE_SIZE 128
-
-#ifndef M_PI
-	#define M_PI 3.141592654
-#endif
+#include "crosshair.h"
 
 #define INITIAL_ZOOM 3.0
 

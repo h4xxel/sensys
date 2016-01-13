@@ -1,5 +1,5 @@
 BIN=sensys
-OBJS=triangle.o thread.o main.o bone.o
+OBJS=triangle.o thread.o main.o bone.o linalg.o
 
 ifeq ($(shell uname -m),armv6l)
 include Makefile.pi
