@@ -120,7 +120,7 @@ static void matrix33_times_matrix33(double a[9], double b[9], double res[9]) {
 
 static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
 	Vector3 a;
-	Vector3 b = {0.0, -1.0, 0.0};
+	Vector3 b = {0.0, 0., 1.0};
 	
 	a = raw->acc;
 	norm_vector(&a);
@@ -163,12 +163,23 @@ static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
 	matrix33_plus_matrix33(rot, v2);
 	
 	//Thanks to: http://nghiaho.com/?page_id=846
-	rot_vector.x = atan2(rot[7], rot[8]);
-	rot_vector.y = atan2(-rot[6], sqrt(POW2(rot[7]) + POW2(rot[8])));
-	rot_vector.z = atan2(rot[3], rot[0]);
+	rot_vector.x = (atan2(rot[7], rot[8]));
+	rot_vector.y = -(atan2(-rot[6], sqrt(POW2(rot[7]) + POW2(rot[8]))));
+	rot_vector.z = (atan2(rot[3], rot[0]));
 	
 	accumulated->gyro = rot_vector;
 }
+
+
+void recal_gyro() {
+	int i;
+
+	for (i = 0; i < 5; i++)
+		set_gyro(&accumulated_imu[i], &imu_data[i]);
+	return;
+	
+}
+
 
 static void remove_gravity(Vector3 *acc, double u, double v) {
 	Vector3 gravity = {0.0, -1.0, 0.0};
@@ -246,7 +257,7 @@ static void process_one_imu(struct SensorData sd, int samples, int range) {
 	
 	//TODO: correct angles
 	remove_gravity(&iv.acc, accumulated_imu[i].gyro.x, -accumulated_imu[i].gyro.y);
-	fprintf(stderr, "acc: %lf %lf %lf (%lf %lf)\n", iv.acc.x, iv.acc.y, iv.acc.z, accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y);
+	//fprintf(stderr, "acc: %lf %lf %lf (%lf %lf)\n", iv.acc.x, iv.acc.y, iv.acc.z, accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y);
 
 	velocity[i].x += iv.acc.x * SAMPLERATE;
 	velocity[i].y += iv.acc.y * SAMPLERATE;
@@ -289,6 +300,7 @@ static void process_imu() {
 				case '\n':
 					for (i = 0; i < 6; i++)
 						accumulated_imu[i].gyro.x = accumulated_imu[i].gyro.y = accumulated_imu[i].gyro.z = 0.;
+					recal_gyro();
 					break;
 				
 				case 'w':
@@ -303,7 +315,9 @@ static void process_imu() {
 				case 'd':
 					camera_rotate(-2.0*M_PI/100.0, 0.0);
 					break;
-				
+				case 'z':
+					camera_reset();
+					break;
 				case '+':
 					camera_zoom_in(-0.5);
 					break;

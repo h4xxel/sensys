@@ -134,6 +134,7 @@ static void draw_line(Vector3 *start, Vector3 *end) {
 
 void draw_grid() {
 	glColor4f(0.2f, 0.2f, 0.2f, 1.0f);
+	glLineWidth(2);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, xy_grid);
 	glDrawArrays(GL_LINES, 0, 2 * 51 * 2);
@@ -142,6 +143,8 @@ void draw_grid() {
 	//glVertexPointer(3, GL_FLOAT, 0, yz_grid);
 	//glDrawArrays(GL_LINES, 0, 2 * 51 * 2);
 	glDisableClientState(GL_VERTEX_ARRAY);
+	glColor4f(1.0, 1.0f, 1.0f, 1.0f);
+	glLineWidth(8);
 }
 
 
@@ -176,6 +179,14 @@ void camera_rotate(double pitch, double yaw) {
 	camera.x = camera_zoom*sin(camera_yaw)*sin(camera_pitch);
 	camera.z = camera_zoom*sin(camera_yaw)*cos(camera_pitch);
 }
+
+
+void camera_reset() {
+	camera_yaw = camera_pitch = 0.00001;
+	camera_zoom = INITIAL_ZOOM;
+	camera_rotate(0, 0);
+}
+
 
 void camera_zoom_in(double zoom) {
 	camera_zoom += zoom;
@@ -213,6 +224,7 @@ int run_triangle () {
 
 
 void init_grid() {
+	glLineWidth(8);
 	create_grid(xy_grid, 0.2, 0., 0., -5., -5., 0., 0., 10.f, 0.f);
 	create_grid(&xy_grid[51*2], 0., 0.2, 0., -5., -5., 0., 10.f, 0.f, 0.f);
 	
@@ -221,4 +233,6 @@ void init_grid() {
 
 	create_grid(yz_grid, 0., 0.2, 0., 0., -5., -5., 0., 0.f, 10.f);
 	create_grid(&yz_grid[51*2], 0., 0., 0.2, 0., -5., -5., 0.f, 10.f, 0.f);
+
+	camera_reset();
 }
