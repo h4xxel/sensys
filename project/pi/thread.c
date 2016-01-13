@@ -305,6 +305,17 @@ static void process_imu() {
 	for(i = 0; i < 6; i++) {
 		set_gyro(&accumulated_imu[i], &imu_data[i]);
 		gravity[i].acc = imu_data[i].acc;
+		velocity[i].x = 0.0;
+		velocity[i].y = 0.0;
+		velocity[i].z = 0.0;
+		
+		imu_position[i].pos.x = 0;
+		imu_position[i].pos.y = 0;
+		imu_position[i].pos.z = 0;
+		
+		accumulated_imu[i].acc.x = 0;
+		accumulated_imu[i].acc.y = 0;
+		accumulated_imu[i].acc.z = 0;
 	}
 //	for(;;);
 
