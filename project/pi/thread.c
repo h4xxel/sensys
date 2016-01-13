@@ -21,6 +21,7 @@ Vector3 velocity[6];
 IMUPosition imu_position[6];
 IMUVector accumulated_imu[6];
 IMUVector imu_data[6];
+IMUVector gravity[6];
 
 
 double acc_scaling[4] = { 2./32767, 2./32767, 4./32767, 8./32767 };
@@ -275,6 +276,7 @@ static void process_imu() {
 
 	for(i = 0; i < 6; i++) {
 		set_gyro(&accumulated_imu[i], &imu_data[i]);
+		gravity[i].acc = imu_data[i].acc;
 	}
 //	for(;;);
 

@@ -30,13 +30,12 @@ extern IMUVector accumulated_imu[6];
 extern IMUPosition imu_position[6];
 extern struct BoneRender *bonerender;
 extern int bones;
+extern IMUVector gravity[6];
 
 double camera_yaw, camera_pitch, camera_zoom = INITIAL_ZOOM;
 Vector3 camera = {0.0, 0.0, INITIAL_ZOOM};
 
-//static void init_ogl(CUBE_STATE_T *state);
-//static GLfloat inc_and_wrap_angle(GLfloat angle, GLfloat angle_inc);
-//static GLfloat inc_and_clip_distance(GLfloat distance, GLfloat distance_inc);
+static void draw_line(Vector3 *start, Vector3 *end);
 static volatile int terminate;
 static State *state;
 
@@ -91,7 +90,10 @@ static void redraw_bones() {
 			continue;
 		redraw_crosshair(accumulated_imu[j].gyro.x, accumulated_imu[j].gyro.y, accumulated_imu[j].gyro.z, imu_position[j].pos.x, imu_position[j].pos.y, imu_position[j].pos.z);
 		//redraw_crosshair(accumulated_imu[j].gyro.x, accumulated_imu[j].gyro.y, accumulated_imu[j].gyro.z, 0.3 + 0.3 * i, 0, 0);
-
+		
+		draw_line(&imu_position[j].pos, &gravity[j].acc);
+		draw_line(&imu_position[j].pos, &gravity[j].gyro);
+		
 	}
 
 	glPopMatrix();
@@ -114,6 +116,21 @@ static void redraw_crosshair(double rx, double ry, double rz, double px, double 
 	glPopMatrix();
 }
 
+static void draw_line(Vector3 *start, Vector3 *end) {
+	uint8_t color[8] = {0, 0, 0, 255, 255, 255, 255, 255};
+	float point[6] = {start->x, start->y, start->z, end->x, end->y, end->z};
+	
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+	
+	glVertexPointer(3, GL_FLOAT, 0, point);
+	glColorPointer(4, GL_UNSIGNED_BYTE, 0, color);
+	
+	glDrawArrays(GL_LINES, 0, 2);
+	
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+}
 
 void draw_grid() {
 	glColor4f(0.2f, 0.2f, 0.2f, 1.0f);

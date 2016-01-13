@@ -17,14 +17,14 @@ struct Vector3f {
 
 typedef struct IMUVector IMUVector;
 struct IMUVector {
-	struct Vector3 acc;
-	struct Vector3 gyro;
+	Vector3 acc;
+	Vector3 gyro;
 };
 
 typedef struct IMUPosition IMUPosition;
 struct IMUPosition {
-	struct Vector3 pos;
-	struct Vector3 angle;
+	Vector3 pos;
+	Vector3 angle;
 };
 
 
