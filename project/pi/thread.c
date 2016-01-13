@@ -174,7 +174,7 @@ static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
 	
 	double theta, phi;
 	
-	phi = acos(a.x) + M_PI/2.0;
+	phi = acos(a.x) - M_PI/2;
 	theta = atan2(a.y, a.z);
 	
 	
