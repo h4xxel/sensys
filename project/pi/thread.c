@@ -176,7 +176,6 @@ void recal_gyro() {
 
 	for (i = 0; i < 6; i++) {
 		set_gyro(&accumulated_imu[i], &imu_data[i]);
-		gravity[i].acc = imu_data[i].acc;
 	}
 	return;
 	
@@ -261,6 +260,7 @@ static void process_one_imu(struct SensorData sd, int samples, int range) {
 	//TODO: correct angles
 	Vector3 grav = remove_gravity(&iv.acc, accumulated_imu[i].gyro.x, -accumulated_imu[i].gyro.y);
 	gravity[sd.sensor_id].gyro = grav;
+	gravity[sd.sensor_id].acc = imu_data[sd.sensor_id].acc;
 	//fprintf(stderr, "acc: %lf %lf %lf (%lf %lf)\n", iv.acc.x, iv.acc.y, iv.acc.z, accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y);
 
 	velocity[i].x += iv.acc.x * SAMPLERATE;
