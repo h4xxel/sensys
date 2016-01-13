@@ -120,7 +120,8 @@ static void matrix33_times_matrix33(double a[9], double b[9], double res[9]) {
 
 static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
 	Vector3 a;
-	/*Vector3 b = {0.0, 0., 1.0};
+	#if 0
+	Vector3 b = {0.0, 0., 1.0};
 	
 	a = raw->acc;
 	norm_vector(&a);
@@ -167,8 +168,8 @@ static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
 	rot_vector.y = -(atan2(-rot[6], sqrt(POW2(rot[7]) + POW2(rot[8]))));
 	rot_vector.z = (atan2(rot[3], rot[0]));
 	
-	accumulated->gyro = rot_vector;*/
-	
+	accumulated->gyro = rot_vector;
+	#endif	
 	a = raw->acc;
 	norm_vector(&a);
 	
@@ -179,7 +180,7 @@ static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
 	
 	
 	accumulated->gyro.x = phi;
-	accumulated->gyro.y = theta + M_PI;
+	accumulated->gyro.y = theta;
 }
 
 
@@ -199,18 +200,19 @@ static Vector3 remove_gravity(Vector3 *acc, double u, double v) {
 	
 	double a, b, c, d, e, f, g, h, i;
 	double det;
-	
+
+	double rot[9];
 	double rot_inv[9];
-	
-	a = cos(v);
-	b = -sin(v);
-	c = 1;
-	d = cos(u)*sin(v);
-	e = cos(u)*cos(v);
-	f = -sin(u);
-	g = sin(u)*sin(v);
-	h = sin(u)*cos(v);
-	i = cos(u);
+
+	rot[0] = cos(v);
+	rot[1] = -sin(v);
+	rot[2] = 1;
+	rot[3] = cos(u)*sin(v);
+	rot[4] = cos(u)*cos(v);
+	rot[5] = -sin(u);
+	rot[6] = sin(u)*sin(v);
+	rot[7] = sin(u)*cos(v);
+ 	rot[8]= cos(u);
 	
 	det = a*e*i - a*f*h - b*d*i + b*f*g + c*d*h - c*e*g;
 	
@@ -228,7 +230,7 @@ static Vector3 remove_gravity(Vector3 *acc, double u, double v) {
 	
 	scalar_dot_matrix33(1.0/det, rot_inv);
 	
-	matrix33_times_vector3(rot_inv, &grav);
+	matrix33_times_vector3(rot, &grav);
 	
 	//Oops, let's rotate some more..
 	rot_inv[0] = 1;
@@ -242,7 +244,7 @@ static Vector3 remove_gravity(Vector3 *acc, double u, double v) {
 	rot_inv[8] = 0;
 
 	matrix33_times_vector3(rot_inv, &grav);
-	
+		
 	vector3_minus_vector3(acc, &grav);
 	return grav;
 }
@@ -270,7 +272,7 @@ static void process_one_imu(struct SensorData sd, int samples, int range) {
 	imu_data[i].acc = iv.acc;
 	
 	//TODO: correct angles
-	Vector3 grav = remove_gravity(&iv.acc, -accumulated_imu[i].gyro.x, -accumulated_imu[i].gyro.y);
+	Vector3 grav = remove_gravity(&iv.acc, accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y);
 	gravity[sd.sensor_id].gyro = grav;
 	gravity[sd.sensor_id].acc = imu_data[sd.sensor_id].acc;
 	accel_no_grav[sd.sensor_id] = iv.acc;

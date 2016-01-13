@@ -91,11 +91,11 @@ static void redraw_bones() {
 		if ((j = bone[i].imu_id) < 0)
 			continue;
 		redraw_crosshair(accumulated_imu[j].gyro.x, accumulated_imu[j].gyro.y, accumulated_imu[j].gyro.z, imu_position[j].pos.x, imu_position[j].pos.y, imu_position[j].pos.z);
-		//redraw_crosshair(accumulated_imu[j].gyro.x, accumulated_imu[j].gyro.y, accumulated_imu[j].gyro.z, 0.3 + 0.3 * i, 0, 0);
-		
 		draw_line(&imu_position[j].pos, &gravity[j].acc, 0, 0, 255);
 		draw_line(&imu_position[j].pos, &gravity[j].gyro, 0 ,255, 0);
 		draw_line(&imu_position[j].pos, &accel_no_grav[j], 255, 0, 0);
+		//redraw_crosshair(accumulated_imu[j].gyro.x, accumulated_imu[j].gyro.y, accumulated_imu[j].gyro.z, 0.3 + 0.3 * i, 0, 0);
+		
 		
 	}
 
@@ -220,7 +220,12 @@ int run_triangle () {
 		draw_grid();
 	//	for (i = 0; i < 2; i++)
 	//		redraw_crosshair(accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y, accumulated_imu[i].gyro.z, imu_position[i].pos.x, imu_position[i].pos.y, imu_position[i].pos.z);
-		redraw_bones();
+		//redraw_bones();
+		redraw_crosshair(accumulated_imu[0].gyro.x, accumulated_imu[0].gyro.y, accumulated_imu[0].gyro.z, 0, 0, 0); 
+		Vector3 zero = {0, 0, 0};
+		draw_line(&zero, &gravity[0].acc, 0, 0, 255);
+		draw_line(&zero, &gravity[0].gyro, 0 ,255, 0);
+		draw_line(&zero, &accel_no_grav[0], 255, 0, 0);
 		ogl_flip(state);
 	}
 	
