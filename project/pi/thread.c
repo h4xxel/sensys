@@ -6,6 +6,7 @@
 
 #include "gl.h"
 #include "radiolink/protocol.h"
+#include "radiolink/radiolink.h"
 #include "vector.h"
 #define	SAMPLERATE	(1./50)
 
@@ -357,6 +358,9 @@ static void process_imu() {
 					break;
 				case 'z':
 					camera_reset();
+					break;
+				case 'r':
+					radiolink_init(26);
 					break;
 				case '+':
 					camera_zoom_in(-0.5);

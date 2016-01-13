@@ -15,3 +15,7 @@ struct DecodedPacket protocol_recv_decoded_packet() {
 int protocol_init() {
 	return 0;
 }
+
+int radiolink_init(char __packet_size) {
+	return 0;
+}
