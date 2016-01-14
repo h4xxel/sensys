@@ -14,6 +14,7 @@
 
 #define G_LENGTH_THRESHOLD 0.1
 #define G_ANGLE_THRESHOLD 0.9
+#define G_AVERAGING 5
 
 int serial_fd;
 Vector3 gyro_data;
@@ -26,6 +27,7 @@ IMUVector imu_data[6];
 IMUVector gravity[6];
 Vector3 accel_no_grav[6];
 Vector3 accel_average[6];
+int average_samples[6];
 
 double acc_scaling[4] = { 2./32767, 2./32767, 4./32767, 8./32767 };
 double gyro_scaling[4] = { (125.*M_PI/180.0)/32767, (250.*M_PI/180.0)/32767, (500.*M_PI/180.0)/32767, (1000.*M_PI/180.0)/32767 };
@@ -45,7 +47,7 @@ static void set_gyro(IMUVector *accumulated, IMUVector *grav) {
 	accumulated->gyro.y = -theta;
 }
 
-void average_accelerometer(IMUVector *grav, Vector3 *acc) {
+void average_accelerometer(IMUVector *grav, Vector3 *acc, int *samples) {
 	double len;
 	
 	len = sqrt(POW2(acc->x) + POW2(acc->y) + POW2(acc->z));
@@ -57,14 +59,28 @@ void average_accelerometer(IMUVector *grav, Vector3 *acc) {
 	grav->acc.x = (grav->acc.x + acc->x)/2;
 	grav->acc.y = (grav->acc.y + acc->y)/2;
 	grav->acc.z = (grav->acc.z + acc->z)/2;
+	
+	(*samples)++;
 }
 
+
+void force_recal_gyros() {
+	int i;
+
+	for (i = 0; i < 6; i++) {
+		set_gyro(&accumulated_imu[i], &imu_data[i]);
+	}
+}
 
 void recal_gyros() {
 	int i;
 
 	for (i = 0; i < 6; i++) {
-		set_gyro(&accumulated_imu[i], &imu_data[i]);
+		if(average_samples[i] < G_AVERAGING)
+			continue;
+		
+		set_gyro(&gravity[i], &imu_data[i]);
+		average_samples[i] = 0;
 	}
 }
 
@@ -137,7 +153,7 @@ static void process_one_imu(struct SensorData sd, int samples, int range) {
 	//TODO: correct angles
 	Vector3 grav = remove_gravity(&iv.acc, accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y);
 	gravity[sd.sensor_id].gyro = grav;
-	average_accelerometer(&gravity[sd.sensor_id], &imu_data[sd.sensor_id].acc);
+	average_accelerometer(&gravity[sd.sensor_id], &imu_data[sd.sensor_id].acc, &average_samples[sd.sensor_id]);
 	//gravity[sd.sensor_id].acc = imu_data[sd.sensor_id].acc;
 	accel_no_grav[sd.sensor_id] = iv.acc;
 	//fprintf(stderr, "acc: %lf %lf %lf (%lf %lf)\n", iv.acc.x, iv.acc.y, iv.acc.z, accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y);
@@ -194,7 +210,7 @@ static void process_imu() {
 				case '\n':
 					for (i = 0; i < 6; i++)
 						accumulated_imu[i].gyro.x = accumulated_imu[i].gyro.y = accumulated_imu[i].gyro.z = 0.;
-					recal_gyros();
+					force_recal_gyros();
 					break;
 				
 				case 'w':
@@ -226,6 +242,7 @@ static void process_imu() {
 					break;
 			}
 	}
+	recal_gyros();
 }
 
 
