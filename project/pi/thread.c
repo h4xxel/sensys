@@ -28,6 +28,8 @@ IMUVector imu_data[6];
 IMUVector gravity[6];
 Vector3 accel_no_grav[6];
 Vector3 accel_average[6];
+extern Vector3 old_imudata[6];
+extern Vector3 old_imupos[6];
 int average_samples[6];
 
 double acc_scaling[4] = { 2./32767, 2./32767, 4./32767, 8./32767 };
@@ -215,6 +217,8 @@ static void process_imu() {
 						imu_position[i].pos.x = velocity[i].x = 0;
 						imu_position[i].pos.y = velocity[i].y = 0;
 						imu_position[i].pos.z = velocity[i].z = 0;
+						old_imudata[i] = imu_position[i].pos;
+						old_imupos[i] = old_imudata[i];
 					}
 					
 					reset_bone();

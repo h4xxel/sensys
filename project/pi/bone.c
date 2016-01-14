@@ -15,8 +15,10 @@ Vector3 global_pos;
 extern struct IMUPosition imu_position[6];
 extern struct IMUVector accumulated_imu[6];
 Vector3 accel_no_grav[6];
+Vector3 old_imudata[6];
+Vector3 old_imupos[6];
 
-#define	GLOBAL_POSITION		1
+#define	GLOBAL_POSITION		0
 
 
 Vector3 vec3f_to_vec3(Vector3f v3f) {
@@ -85,10 +87,12 @@ void reset_bone() {
 void bone_recalculate() {
 	int i;
 	struct IMUPosition imu, this, tmp;
+	Vector3 relative_diff[bones];
 	Vector3 calc_pos[bones], calc_off[bones];
 	for (i = 0; i < 6; i++)
 		imu_position[i].angle = accumulated_imu[i].gyro;
-
+	
+	Vector3 relative_sum = { }, absolute_sum = {};
 	for (i = 0; i < bones; i++) {
 		if (bone[i].joint == -1)
 			imu.pos.x = 0, imu.pos.y = 0, imu.pos.z = 0;
@@ -96,7 +100,6 @@ void bone_recalculate() {
 			imu = imu_position[bone[bone[i].joint].imu_id], imu.pos = vec3f_to_vec3(bonerender[bone[i].joint].p2);
 		this = imu_position[bone[i].imu_id];
 		bonerender[i].p1 = vec3_to_vec3f(imu.pos);
-		//fprintf(stderr, "IMU pos: %lf %lf %lf\n", imu.pos.x, imu.pos.y, imu.pos.z);
 		//tmp.angle.x = clamp_angle(this.angle.x, imu.angle.x, bone[i].max_angle_x, bone[i].min_angle_x);
 		//tmp.angle.y = clamp_angle(this.angle.y, imu.angle.y, bone[i].max_angle_y, bone[i].min_angle_y);
 		//tmp.angle.z = clamp_angle(this.angle.z, imu.angle.z, bone[i].max_angle_z, bone[i].min_angle_z);
@@ -116,45 +119,42 @@ void bone_recalculate() {
 		calc_pos[i].x += bonerender[i].p1.x;
 		calc_pos[i].y += bonerender[i].p1.y;
 		calc_pos[i].z += bonerender[i].p1.z;
+
+		relative_sum.x += calc_pos[i].x - old_imupos[i].x;
+		relative_sum.y += calc_pos[i].y - old_imupos[i].y;
+		relative_sum.z += calc_pos[i].z - old_imupos[i].z;
+
+		absolute_sum.x += imu_position[i].pos.x - old_imudata[i].x;
+		absolute_sum.y += imu_position[i].pos.y - old_imudata[i].y;
+		absolute_sum.z += imu_position[i].pos.z - old_imudata[i].z;
+
+		old_imupos[i] = calc_pos[i];
+		old_imudata[i] = imu_position[i].pos;
 		calc_off[i].x = calc_pos[i].x + global_pos.x - this.pos.x;
 		calc_off[i].y = calc_pos[i].y + global_pos.y - this.pos.y;
-		calc_off[i].z = calc_pos[i].z - global_pos.z - this.pos.z;
+		calc_off[i].z = calc_pos[i].z + global_pos.z - this.pos.z;
 	}
+		
+	#if GLOBAL_POSITION
+	Vector3 diff;
 
-	double minx, maxx, miny, maxy, minz, maxz;
-	minx = miny = minz = HUGE_VAL;
-	maxx = maxy = maxz = -HUGE_VAL;
+	diff.x = absolute_sum.x - relative_sum.x;
+	diff.y = absolute_sum.y - relative_sum.y;
+	diff.z = absolute_sum.z - relative_sum.z;
+	fprintf(stderr, "rel %lf %lf %lf\n", relative_sum.x, relative_sum.y, relative_sum.z);
+	fprintf(stderr, "abs %lf %lf %lf\n", absolute_sum.x, absolute_sum.y, absolute_sum.z);
+
+	global_pos.x += diff.x /2;
+	global_pos.y += diff.y/2;
+	global_pos.z += diff.z/2;
 	
+	#endif
 	for (i = 0; i < bones; i++) {
-		minx = (minx > calc_off[i].x) ? calc_off[i].x : minx;
-		miny = (miny > calc_off[i].y) ? calc_off[i].y : miny;
-		minz = (minz > calc_off[i].z) ? calc_off[i].z : minz;
-		maxx = (maxx < calc_off[i].x) ? calc_off[i].x : maxx;
-		maxy = (maxy < calc_off[i].y) ? calc_off[i].y : maxy;
-		maxz = (maxz < calc_off[i].z) ? calc_off[i].z : maxz;
+		imu_position[bone[i].imu_id].pos.x = calc_pos[i].x + global_pos.x;
+		imu_position[bone[i].imu_id].pos.y = calc_pos[i].y + global_pos.y;
+		imu_position[bone[i].imu_id].pos.z = calc_pos[i].z + global_pos.z;
 	}
 
-	double avgx, avgy, avgz;
-	/* TODO: Better averageing function (weighted?) */
-	#if GLOBAL_POSITION
-	avgx = (maxx - minx) / 2 + minx;
-	avgy = (maxy - miny) / 2 + miny;
-	avgz = (maxz - minz) / 2 + minz;
-	#else
-	avgx = avgy = avgz = 0;
-	#endif
-
-	for (i = 0; i < bones; i++) {
-		imu_position[bone[i].imu_id].pos.x = calc_pos[i].x + avgx + global_pos.x;
-		imu_position[bone[i].imu_id].pos.y = calc_pos[i].y + avgy + global_pos.y;
-		imu_position[bone[i].imu_id].pos.z = calc_pos[i].z + avgz + global_pos.z;
-	}
-
-	#if GLOBAL_POSITION
-	global_pos.x += avgx;
-	global_pos.y += avgy;
-	global_pos.z += avgz;
-	#endif
 	//fprintf(stderr, "Global pos is now %lf, %lf, %lf\n", global_pos.x, global_pos.y, global_pos.z);
 
 	//fprintf(stderr, "Calculated variance: %lf %lf %lf\n", maxx - minx, maxy - miny, maxz - minz);
