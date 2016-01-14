@@ -47,19 +47,6 @@ void create_grid(Vector3f *grid, float dx, float dy, float dz, float px, float p
 	}
 }
 
-
-/***********************************************************
- * Name: init_ogl
- *
- * Arguments:
- *       CUBE_STATE_T *state - holds OGLES model info
- *
- * Description: Sets the display, OpenGL|ES context and screen stuff
- *
- * Returns: void
- *
- ***********************************************************/
-
 static void redraw_crosshair(double rx, double ry, double rz, double px, double py, double pz);
 
 

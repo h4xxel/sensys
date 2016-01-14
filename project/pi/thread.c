@@ -12,7 +12,8 @@
 
 #define	SAMPLERATE	(1./50)
 
-#define G_THRESHOLD 0.1
+#define G_LENGTH_THRESHOLD 0.1
+#define G_ANGLE_THRESHOLD 0.9
 
 int serial_fd;
 Vector3 gyro_data;
@@ -24,25 +25,16 @@ IMUVector accumulated_imu[6];
 IMUVector imu_data[6];
 IMUVector gravity[6];
 Vector3 accel_no_grav[6];
+Vector3 accel_average[6];
 
 double acc_scaling[4] = { 2./32767, 2./32767, 4./32767, 8./32767 };
 double gyro_scaling[4] = { (125.*M_PI/180.0)/32767, (250.*M_PI/180.0)/32767, (500.*M_PI/180.0)/32767, (1000.*M_PI/180.0)/32767 };
 
-/*
-static void calibrate_gyro(IMUVector *accumulated, IMUVector *raw) {
-	double len = sqrt(POW2(imu->pos.x) + POW2(imu->pos.y) + POW2(imu->pos.z));
-	
-	if(fabs(len - 1.0) < G_THRESHOLD) {
-		
-	}
-}
-*/
-
-static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
+static void set_gyro(IMUVector *accumulated, IMUVector *grav) {
 	Vector3 a;
 	double theta, phi;
 	
-	a = raw->acc;
+	a = grav->acc;
 	norm_vector(&a);
 	
 	theta = acos(a.x) - M_PI/2.0;
@@ -53,23 +45,38 @@ static void set_gyro(IMUVector *accumulated, IMUVector *raw) {
 	accumulated->gyro.y = -theta;
 }
 
+void average_accelerometer(IMUVector *grav, Vector3 *acc) {
+	double len;
+	
+	len = sqrt(POW2(acc->x) + POW2(acc->y) + POW2(acc->z));
+	if(fabs(len - 1.0) > G_LENGTH_THRESHOLD)
+		return;
+	if(dot_product(acc, &grav->gyro) < G_ANGLE_THRESHOLD)
+		return;
+	
+	grav->acc.x = (grav->acc.x + acc->x)/2;
+	grav->acc.y = (grav->acc.y + acc->y)/2;
+	grav->acc.z = (grav->acc.z + acc->z)/2;
+}
 
-void recal_gyro() {
+
+void recal_gyros() {
 	int i;
 
 	for (i = 0; i < 6; i++) {
-		#if 1
 		set_gyro(&accumulated_imu[i], &imu_data[i]);
-		#else
+	}
+}
+
+void reset_gyros() {
+	int i;
+	
+	for(i = 0; i < 6; i++) {
 		accumulated_imu[i].gyro.x = 0.0;
 		accumulated_imu[i].gyro.y = 0.0;
 		accumulated_imu[i].gyro.z = 0.0;
-		#endif
 	}
-	return;
-	
 }
-
 
 static Vector3 remove_gravity(Vector3 *acc, double u, double v) {
 	Vector3 grav = {0.0, -1.0, 0.0};
@@ -130,7 +137,8 @@ static void process_one_imu(struct SensorData sd, int samples, int range) {
 	//TODO: correct angles
 	Vector3 grav = remove_gravity(&iv.acc, accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y);
 	gravity[sd.sensor_id].gyro = grav;
-	gravity[sd.sensor_id].acc = imu_data[sd.sensor_id].acc;
+	average_accelerometer(&gravity[sd.sensor_id], &imu_data[sd.sensor_id].acc);
+	//gravity[sd.sensor_id].acc = imu_data[sd.sensor_id].acc;
 	accel_no_grav[sd.sensor_id] = iv.acc;
 	//fprintf(stderr, "acc: %lf %lf %lf (%lf %lf)\n", iv.acc.x, iv.acc.y, iv.acc.z, accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y);
 
@@ -186,7 +194,7 @@ static void process_imu() {
 				case '\n':
 					for (i = 0; i < 6; i++)
 						accumulated_imu[i].gyro.x = accumulated_imu[i].gyro.y = accumulated_imu[i].gyro.z = 0.;
-					recal_gyro();
+					recal_gyros();
 					break;
 				
 				case 'w':
