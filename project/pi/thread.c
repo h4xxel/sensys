@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <math.h>
 
+#include "bone.h"
 #include "gl.h"
 #include "radiolink/protocol.h"
 #include "radiolink/radiolink.h"
@@ -14,7 +15,7 @@
 
 #define G_LENGTH_THRESHOLD 0.1
 #define G_ANGLE_THRESHOLD 0.9
-#define G_AVERAGING 5
+#define G_AVERAGING 20
 
 int serial_fd;
 Vector3 gyro_data;
@@ -78,8 +79,9 @@ void recal_gyros() {
 	for (i = 0; i < 6; i++) {
 		if(average_samples[i] < G_AVERAGING)
 			continue;
-		
-		set_gyro(&gravity[i], &imu_data[i]);
+	
+		fprintf(stderr, "Reset %i\n", i);
+		set_gyro(&accumulated_imu[i], &gravity[i]);
 		average_samples[i] = 0;
 	}
 }
@@ -158,9 +160,9 @@ static void process_one_imu(struct SensorData sd, int samples, int range) {
 	accel_no_grav[sd.sensor_id] = iv.acc;
 	//fprintf(stderr, "acc: %lf %lf %lf (%lf %lf)\n", iv.acc.x, iv.acc.y, iv.acc.z, accumulated_imu[i].gyro.x, accumulated_imu[i].gyro.y);
 
-	velocity[i].x += iv.acc.x * SAMPLERATE;
-	velocity[i].y += iv.acc.y * SAMPLERATE;
-	velocity[i].z += iv.acc.z * SAMPLERATE;
+	velocity[i].x += accel_no_grav[i].x * SAMPLERATE;
+	velocity[i].y += accel_no_grav[i].y * SAMPLERATE;
+	velocity[i].z += accel_no_grav[i].z * SAMPLERATE;
 	
 /*	accumulated_imu[i].acc.x += velocity[i].x * SAMPLERATE;
 	accumulated_imu[i].acc.y += velocity[i].y * SAMPLERATE;
@@ -208,8 +210,14 @@ static void process_imu() {
 		while ((ch = getchar()) >= ' ' || ch == '\n')
 			switch(ch) {
 				case '\n':
-					for (i = 0; i < 6; i++)
+					for (i = 0; i < 6; i++) {
 						accumulated_imu[i].gyro.x = accumulated_imu[i].gyro.y = accumulated_imu[i].gyro.z = 0.;
+						imu_position[i].pos.x = velocity[i].x = 0;
+						imu_position[i].pos.y = velocity[i].y = 0;
+						imu_position[i].pos.z = velocity[i].z = 0;
+					}
+					
+					reset_bone();
 					force_recal_gyros();
 					break;
 				
@@ -241,8 +249,9 @@ static void process_imu() {
 					camera_zoom_in(0.5);
 					break;
 			}
+		recal_gyros();
+		bone_recalculate();
 	}
-	recal_gyros();
 }
 
 

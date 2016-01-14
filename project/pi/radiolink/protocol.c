@@ -59,7 +59,7 @@ struct DecodedPacket protocol_recv_decoded_packet() {
 	uint8_t data[26];
 
 	radiolink_recv(26, data);
-	printf("got data\n");
+	//printf("got data\n");
 	return __decode_packet(data);
 }
 

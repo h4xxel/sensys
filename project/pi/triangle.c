@@ -25,6 +25,7 @@ extern int bones;
 extern IMUVector gravity[6];
 extern IMUVector imu_data[6];
 extern Vector3 accel_no_grav[6];
+extern Vector3 global_pos;
 
 double camera_yaw, camera_pitch, camera_zoom = INITIAL_ZOOM;
 Vector3 camera = {0.0, 0.0, INITIAL_ZOOM};
@@ -53,8 +54,10 @@ static void redraw_crosshair(double rx, double ry, double rz, double px, double 
 static void redraw_bones() {
 	int i, j;
 
-	bone_recalculate();
+	//bone_recalculate();
 	glPushMatrix();
+
+	glTranslatef(global_pos.x, global_pos.y, global_pos.z);
 
 //	for (i = 0; i < bones; i++) {
 		glEnableClientState(GL_VERTEX_ARRAY);
@@ -65,7 +68,8 @@ static void redraw_bones() {
 		glDisableClientState(GL_VERTEX_ARRAY);
 
 //	}
-
+	glPopMatrix();
+	glPushMatrix();
 	for (i = 0; i < bones; i++) {
 		if ((j = bone[i].imu_id) < 0)
 			continue;

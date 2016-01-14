@@ -14,8 +14,9 @@ Vector3 global_pos;
 
 extern struct IMUPosition imu_position[6];
 extern struct IMUVector accumulated_imu[6];
+Vector3 accel_no_grav[6];
 
-#define	GLOBAL_POSITION		0
+#define	GLOBAL_POSITION		1
 
 
 Vector3 vec3f_to_vec3(Vector3f v3f) {
@@ -73,6 +74,12 @@ double clamp_angle(double angle, double parent_angle, double max, double min) {
 }
 
 
+void reset_bone() {
+	bonerender = memset(bonerender, 0, sizeof(*bonerender) * bones);
+	global_pos.x = global_pos.y = global_pos.z = 0;
+}
+
+
 /* TODO: Allow for bones without an imu */
 /* ACHTUNG JOMMPAKOD */
 void bone_recalculate() {
@@ -84,7 +91,7 @@ void bone_recalculate() {
 
 	for (i = 0; i < bones; i++) {
 		if (bone[i].joint == -1)
-			imu.pos = global_pos;
+			imu.pos.x = 0, imu.pos.y = 0, imu.pos.z = 0;
 		else
 			imu = imu_position[bone[bone[i].joint].imu_id], imu.pos = vec3f_to_vec3(bonerender[bone[i].joint].p2);
 		this = imu_position[bone[i].imu_id];
@@ -109,9 +116,9 @@ void bone_recalculate() {
 		calc_pos[i].x += bonerender[i].p1.x;
 		calc_pos[i].y += bonerender[i].p1.y;
 		calc_pos[i].z += bonerender[i].p1.z;
-		calc_off[i].x = calc_pos[i].x - this.pos.x;
-		calc_off[i].y = calc_pos[i].y - this.pos.y;
-		calc_off[i].z = calc_pos[i].z - this.pos.z;
+		calc_off[i].x = calc_pos[i].x + global_pos.x - this.pos.x;
+		calc_off[i].y = calc_pos[i].y + global_pos.y - this.pos.y;
+		calc_off[i].z = calc_pos[i].z - global_pos.z - this.pos.z;
 	}
 
 	double minx, maxx, miny, maxy, minz, maxz;
@@ -138,9 +145,9 @@ void bone_recalculate() {
 	#endif
 
 	for (i = 0; i < bones; i++) {
-		imu_position[bone[i].imu_id].pos.x = calc_pos[i].x + avgx;
-		imu_position[bone[i].imu_id].pos.y = calc_pos[i].y + avgy;
-		imu_position[bone[i].imu_id].pos.z = calc_pos[i].z + avgz;
+		imu_position[bone[i].imu_id].pos.x = calc_pos[i].x + avgx + global_pos.x;
+		imu_position[bone[i].imu_id].pos.y = calc_pos[i].y + avgy + global_pos.y;
+		imu_position[bone[i].imu_id].pos.z = calc_pos[i].z + avgz + global_pos.z;
 	}
 
 	#if GLOBAL_POSITION

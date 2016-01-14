@@ -27,6 +27,7 @@ extern int bones;
 
 void bone_parse(char *fname);
 void bone_recalculate();
+void reset_bone();
 
 
 #endif
