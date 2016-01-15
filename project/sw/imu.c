@@ -41,13 +41,19 @@ uint32_t imu_enumerate() {
 		ret <<= 1;
 		imu_select(i);
 		
+		int valid = 1;
 		if(i2c_read_reg(ACCEL_ADDR, 0xF) != 0x41)
-			continue;
-		//uart_printf("\tIMU %i: found accelerometer\r\n", i);		
+			valid = 0;
+		else
+			debug_printf("\tIMU %i: found accelerometer\r\n", i);	
 		
 		if(i2c_read_reg(GYRO_ADDR, 0x0) != 0xF)
+			valid = 0;
+		else
+			debug_printf("\tIMU %i: found gyro\r\n", i);
+		
+		if(!valid)
 			continue;
-		//uart_printf("\tIMU %i: found gyro\r\n", i);
 		
 		
 		ret |= 1;

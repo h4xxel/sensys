@@ -104,11 +104,18 @@ int main(int ram, char **argv) {
 	
 	debug_printf("IMU setup done\r\n");
 	
+	unsigned char sync[26] = {
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 
+	};
+	uart_send_raw(sync, PROTOCOL_PACKET_SIZE);
+	
 	for(;;) {
 		protocol_packet_new(packet, RANGE);
 		
 		if(sampleflag)
-			uart_printf("Warning! Missed deadline\r\n");
+			debug_printf("Warning! Missed deadline\r\n");
 		while(!sampleflag);
 		sampleflag = 0;
 		
@@ -133,15 +140,17 @@ int main(int ram, char **argv) {
 				j++;
 				if(j < IMU_MAX/2)
 					protocol_packet_new(packet + j, RANGE);
+				protocol_pack_imu(packet + j, imu + i, i);
 			}
 		}
 		
-		j = i/2;
+		j = (i + 1)/2;
 		
 		for(i = 0; i < j; i++) {
 			if(!protocol_packet_isempty(packet + i)) {
 				debug_printf("Sending packet %i\r\n", i);
-				radiolink_send_stubborn(PROTOCOL_PACKET_SIZE, (void *) (packet + i), 1000);
+				//radiolink_send_stubborn(PROTOCOL_PACKET_SIZE, (void *) (packet + i), 1000);
+				uart_send_raw((void *) (packet + i), PROTOCOL_PACKET_SIZE);
 			}
 		}
 	}
