@@ -6,6 +6,7 @@
 #include <time.h>
 #include "radiolink.h"
 #include "protocol.h"
+#include "serial.h"
 
 #include <wiringPi.h>
 #include <wiringPiSPI.h>
@@ -58,18 +59,21 @@ static struct DecodedPacket __decode_packet(uint8_t *data) {
 struct DecodedPacket protocol_recv_decoded_packet() {
 	uint8_t data[26];
 
-	radiolink_recv(26, data);
+//	radiolink_recv(26, data);
+	serial_get_package(data);
 	//printf("got data\n");
 	return __decode_packet(data);
 }
 
 
 int protocol_init() {
-	wiringPiSetup();
+/*	wiringPiSetup();
 	wiringPiSPISetup(0, 8000000);
 	sleep(1);
 	
-	radiolink_init(26);
+	radiolink_init(26);*/
+	open_serial("/dev/ttyUSB0");
+	wait_for_sync();
 
 	return 0;
 }
