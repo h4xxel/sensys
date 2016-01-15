@@ -21,6 +21,21 @@ Vector3 old_imupos[6];
 #define	GLOBAL_POSITION		0
 
 
+void print_bone_angle() {
+	int i;
+	for (i = 0; i < bones; i++) {
+		Vector3 parent = { };
+		double x, y, z;
+		if (bone[i].joint >= 0)
+			parent = accumulated_imu[bone[bone[i].joint].imu_id].gyro;
+		x = accumulated_imu[bone[i].imu_id].gyro.x - parent.x;
+		y = accumulated_imu[bone[i].imu_id].gyro.y - parent.y;
+		z = accumulated_imu[bone[i].imu_id].gyro.z - parent.z;
+		fprintf(stderr, "%i: %lf, %lf, %lf\n", i, x/M_PI*180., y/M_PI*180., z/M_PI*180);
+	}
+}
+
+
 Vector3 vec3f_to_vec3(Vector3f v3f) {
 	Vector3 v3;
 

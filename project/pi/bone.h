@@ -28,6 +28,7 @@ extern int bones;
 void bone_parse(char *fname);
 void bone_recalculate();
 void reset_bone();
+void print_bone_angle();
 
 
 #endif

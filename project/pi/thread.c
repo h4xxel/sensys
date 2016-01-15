@@ -252,6 +252,9 @@ static void process_imu() {
 				case '-':
 					camera_zoom_in(0.5);
 					break;
+				case ' ':
+					print_bone_angle();
+					break;
 			}
 		recal_gyros();
 		bone_recalculate();
