@@ -29,5 +29,5 @@ $(REPORT) : $(SOURCE)
 	$(EPS2PDF)  $<
 
 clean :
-	rm -f *.pdf *.eps *.aux *.log *.out *.*~
+	rm -f $(REPORT) *.eps *.aux *.log *.out *.*~
 
