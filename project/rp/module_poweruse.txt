@@ -1,0 +1,3 @@
+0 IMU: 15.8 mA
+1 IMU: 22.3 mA
+2 IMU: 27.6 mA
