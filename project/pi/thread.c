@@ -45,7 +45,6 @@ static void set_gyro(IMUVector *accumulated, IMUVector *grav) {
 	theta = acos(a.x) - M_PI/2.0;
 	phi = atan2(a.y, a.z);
 	
-	
 	accumulated->gyro.x = -phi;
 	accumulated->gyro.y = -theta;
 }
@@ -82,7 +81,7 @@ void recal_gyros() {
 		if(average_samples[i] < G_AVERAGING)
 			continue;
 	
-		fprintf(stderr, "Reset %i\n", i);
+//		fprintf(stderr, "Reset %i\n", i);
 		set_gyro(&accumulated_imu[i], &gravity[i]);
 		average_samples[i] = 0;
 	}
@@ -140,6 +139,7 @@ static void process_one_imu(struct SensorData sd, int samples, int range) {
 		return;
 	
 	iv.gyro.x = -gyro_scaling[range] * sd.gyro_x * samples * SAMPLERATE;
+	//iv.gyro.x = gyro_scaling[range] * sd.gyro_x * samples * SAMPLERATE;
 	iv.gyro.y = gyro_scaling[range] * sd.gyro_y * samples * SAMPLERATE;
 	iv.gyro.z = gyro_scaling[range] * sd.gyro_z * samples * SAMPLERATE;
 
@@ -182,8 +182,10 @@ static void process_one_imu(struct SensorData sd, int samples, int range) {
 static void process_imu() {
 	struct DecodedPacket dp;
 	int ch, i, j;
+	time_t now, last;
 
-
+	last = now = time(NULL);
+	
 	dp = protocol_recv_decoded_packet();
 	process_one_imu(dp.sen1, dp.samples, dp.range);
 	process_one_imu(dp.sen2, dp.samples, dp.range);
@@ -258,6 +260,10 @@ static void process_imu() {
 			}
 		recal_gyros();
 		bone_recalculate();
+
+		now = time(NULL);
+		//if (now - last >= 60)
+		//	last = now, print_bone_angle();
 	}
 }
 
