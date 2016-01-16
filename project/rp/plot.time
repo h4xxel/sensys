@@ -1,0 +1,28 @@
+clear
+reset
+
+set yr [1:25]
+set xr [100:15000]
+set border 3
+set style fill solid 1.0 noborder
+
+set xtic auto
+set ytic auto
+
+set ylabel "Antal testpunkter"
+set xlabel "Körtid (ms)"
+
+bin_width = 4;
+bin_number(x) = floor(x/bin_width)
+rounded(x) = bin_width * ( bin_number(x) + 0.5 )
+
+set encoding utf8
+set terminal postscript eps enhanced color font 'Helvetica,10'
+set output 'runtime.eps'
+
+plot "ffit.data" using (rounded($1)):(1) title "First fit" smooth frequency, \
+"bfit.data" using (rounded($1)):(1) title "Best fit" smooth frequency, \
+"wfit.data" using (rounded($1)):(1) title "Worst fit" smooth frequency, \
+"qfit3.data" using (rounded($1)):(1) title "Quckfit, 1 lista" smooth frequency, \
+"qfit6.data" using (rounded($1)):(1) title "Quickfit, 6 listor" smooth frequency, \
+"system.data" using (rounded($1)):(1) title "eglibc 2.13-38+deb7u6" smooth frequency with boxes

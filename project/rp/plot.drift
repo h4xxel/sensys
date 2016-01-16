@@ -1,0 +1,25 @@
+clear
+reset
+
+set autoscale
+set border 3
+set style fill solid 1.0 noborder
+
+set xtic auto
+set ytic auto
+set grid
+
+set ylabel "Angle (degrees)"
+set xlabel "Time (min)"
+set key on left top
+
+set encoding utf8
+set terminal pdf enhanced color font 'Helvetica,10'
+set output 'drift.pdf'
+
+plot "drift-0.csv" using 1 title "IMU 0 X-axis (degrees)" smooth frequency, \
+"drift-0.csv" using 2 title "IMU 0 Y-axis (degrees)" smooth frequency, \
+"drift-0.csv" using 3 title "IMU 0 Z-axis (degrees)" smooth frequency, \
+"drift-1.csv" using 1 title "IMU 1 X-axis (degrees)" smooth frequency, \
+"drift-1.csv" using 2 title "IMU 1 Y-axis (degrees)" smooth frequency, \
+"drift-1.csv" using 3 title "IMU 1 Z-axis (degrees)" smooth frequency

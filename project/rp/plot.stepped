@@ -1,0 +1,21 @@
+clear
+reset
+
+set autoscale
+set border 3
+set style fill solid 1.0 noborder
+
+set xtic auto
+set ytic auto
+set grid
+
+set ylabel "Angle (degrees)"
+set xlabel "Time (s)"
+set key on right bottom
+
+set encoding utf8
+set terminal pdf enhanced color font 'Helvetica,10'
+set output 'stepped.pdf'
+
+plot "Data1.csv" using 1:2 title "Expected" smooth frequency, \
+"Data1.csv" using 1:3 title "Measured" smooth frequency
