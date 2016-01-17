@@ -1,9 +1,33 @@
 % Very simple template for lab reports. Most common packages are already included.
 \documentclass[a4paper, 12pt]{article}
 \usepackage[utf8]{inputenc} % Change according your file encoding
+\usepackage{color}
 \usepackage{graphicx}
+\usepackage[bookmarks]{hyperref}
 %\usepackage{float}
 %\usepackage{url}
+
+\definecolor{ltblue}{rgb}{0.93,0.95,1.0}
+\definecolor{dkblue}{rgb}{0,0,0.5}
+\definecolor{dkyellow}{rgb}{0.5,0.5,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{ltgray}{rgb}{0.9,0.9,0.9}
+\definecolor{dkgreen}{rgb}{0,0.5,0}
+\definecolor{dkmagenta}{rgb}{0.5,0,0.5}
+
+
+\hypersetup{
+    pdftitle={Motion Capturement Project Paper},
+    pdfauthor={Steven Arnow, Axel Isaksson, Markus Renström},
+    pdfsubject={Motion capture, Sensor based systems},
+    colorlinks=true,
+    urlcolor=dkblue,
+    linkcolor=black,
+    citecolor=black,
+    unicode=true,
+}
+
+
 
 %opening
 \title{Motion Capturement Project Paper}
@@ -43,17 +67,18 @@ The technique behind motion capturement and recording motion have only been used
   
 %%%%%%%%%%%%%%%%%%%%%
 \subsection*{Sensors}
-The system created in this project used mostly accelerometers and gyroscopes.  small   would most likely depend on sensors such as accelerometers and gyroscopes to capture the actual motions. The project would probably also need some sort of wireless module with radio sensors to be able to "lift out" heavier computations and avoid wires (with can prevent mobility). 
+The system created in this project uses inertial measurement with gyroscopes and accelerometers to capture motions. An IMU (inertial measurement unit) consisting of one accelerometer and one gyro is attached to every measurement point on the object. The sensors used are MEMS (microelectromechanical systems) sensors which measure acceleration and changes in rotation by measuring the stress in a micro-machined structure.\cite{mems}
 
-The smaller modules will therefore be connected to a larger module which will transmit the collect the data wirelessly to a computer. This will have the benefits of avoiding limitation by cables and such. 
+The sensors used in the project are the LIS2HH12\cite{accelerometer} accelerometer and the BMG160\cite{gyro} gyro. Both sensors provide a digital I$^2$C interface and 16 bits of resolution.
 
+Other popular ways of doing motion capture include high speed cameras and reflective dots placed on the limbs of the measured object instead of using inertial measurement.\cite{wiki}
 
 \section*{Design}
 In this part of the report all the hardware and software constructed during this project will be presented and explained. The architectures of the implementations will be shown in flow charts, block diagram, schematics to illustrate how the system is functioning.  
 
 %%%%%%%%%%%%%%%%%%%%%
 \subsection*{Block diagram}
-Below is a simple block diagram presented which shows the main design of the project (see Figure ~\ref{fig:pic2}). The picture also gives a quick indication of which kinds of parts the implementation will need. The figure also shows that the hardware can be divided into three different parts depending on their functionallity and objectives, the parts are IMUs, motherboard and the host computer.     
+Below is a simple block diagram presented which shows the main design of the project (see Figure ~\ref{fig:pic2}). The picture also gives a quick indication of which kinds of parts the implementation will need. The figure also shows that the hardware can be divided into three different parts depending on their functionallity and objectives, the parts are IMUs (Inertial Measurement Unit), motherboard and the host computer.     
  
 \begin{figure}[h!]
     \centering
@@ -159,15 +184,25 @@ To collect drift data of the system it was mounted on a table (which wasn't used
 
 \bibitem{kursp}
 	The course web page,
-	\textit{$https://people.kth.se/~msmith/II2302\_2016.html$}, fetched \date{\today{}}.
+	\url{https://people.kth.se/~msmith/II2302\_2016.html}, fetched \date{\today{}}.
 
 \bibitem{wiki}
 	Motion Capture on Wikipedia,
-	\textit{$www.en.wikipedia.org/wiki/Motion\_capture$}, fetched \date{\today{}}.
+	\url{http://en.wikipedia.org/wiki/Motion\_capture}, fetched \date{\today{}}.
+
+\bibitem{mems}
+	MEMS on Wikipedia,
+	\url{http://en.wikipedia.org/wiki/MEMS}, fetched \date{\today{}}.
 
 
+\bibitem{accelerometer}
+        LIS2HH12 accelerometer datasheet, ST Microelectronics, fetched \date{\today{}}
+        \url{http://www.st.com/web/en/resource/technical/document/datasheet/DM00096789.pdf}
 	
-
+\bibitem{gyro}
+        BMG gyro datasheet, Boch Sensortec, fetched \date{\today{}}
+        \url{https://ae-bst.resource.bosch.com/media/products/dokumente/bmg160/BST-BMG160-DS000-09.pdf}
+	
 
 \end{thebibliography}
 \end{document}
