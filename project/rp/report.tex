@@ -4,6 +4,8 @@
 \usepackage{color}
 \usepackage{graphicx}
 \usepackage[bookmarks]{hyperref}
+\usepackage{appendix}
+\usepackage{csvsimple,longtable}
 %\usepackage{float}
 %\usepackage{url}
 
@@ -208,5 +210,54 @@ To collect drift data of the system it was mounted on a table (which wasn't used
 	
 
 \end{thebibliography}
+
+\begin{appendices}
+
+\section{Drift data}
+\subsection{IMU 0 (degrees)}
+\tiny
+\csvautotabular{drift-0-header.csv}
+\normalsize
+\subsection{IMU 1 (degrees)}
+\tiny
+\csvautotabular{drift-1-header.csv}
+\normalsize
+
+\section{Angle measurement}
+\subsection{Slow, stepped angle bend}
+\tiny
+\csvreader[
+  longtable=lll,
+  head,
+  table head={%
+    \bfseries Time & \bfseries Protractor & \bfseries Sampled\\\hline\endhead
+    \caption{Slow, stepped angle bend}\endlastfoot
+  },
+]{Data1-comma.csv}{
+  Time=\colname,
+  Protractor=\colvalue,
+  Sampled=\coltext
+}{%
+  \colname & \colvalue & \coltext
+}
+\normalsize
+\subsection{Fast, continuous bend}
+\tiny
+\csvreader[
+  longtable=lll,
+  head,
+  table head={%
+    \bfseries Time & \bfseries Protractor & \bfseries Sampled\\\hline\endhead
+    \caption{Fast, continuous bend}\endlastfoot
+  },
+]{Data2-comma.csv}{
+  Time=\colname,
+  Protractor=\colvalue,
+  Sampled=\coltext
+}{%
+  \colname & \colvalue & \coltext
+}
+\normalsize
+\end{appendices}
 \end{document}
 
