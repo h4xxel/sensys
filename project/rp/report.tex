@@ -2,6 +2,7 @@
 \documentclass[a4paper, 12pt]{article}
 \usepackage[utf8]{inputenc} % Change according your file encoding
 \usepackage{graphicx}
+%\usepackage{float}
 %\usepackage{url}
 
 %opening
@@ -52,7 +53,7 @@ In this part of the report all the hardware and software constructed during this
 
 %%%%%%%%%%%%%%%%%%%%%
 \subsection*{Block diagram}
-Below is a simple block diagram presented which shows the main design of the project (see Figure ~\ref{fig:pic2}). The picture also gives a quick indication of which kinds of parts the implementation will need. The figure also shows that the hardware can be divided into three parts with different functionallity and objective.    
+Below is a simple block diagram presented which shows the main design of the project (see Figure ~\ref{fig:pic2}). The picture also gives a quick indication of which kinds of parts the implementation will need. The figure also shows that the hardware can be divided into three different parts depending on their functionallity and objectives, the parts are IMUs, motherboard and the host computer.     
  
 \begin{figure}[h!]
     \centering
@@ -61,33 +62,47 @@ Below is a simple block diagram presented which shows the main design of the pro
     \label{fig:pic2}
 \end{figure}
 
+\newpage
 \subsection*{Flow charts}
+The software of this project can be described by two flow charts, one representing the implementation on the motherboard and the other representing the host computer. Figure~\ref{fig:pic3} shows how the motherboard application works in a comprehensive maner. 
 
-\begin{figure}[H]
+
+\begin{figure}[h!]
     \centering
-    \includegraphics[scale=0.4]{micro.eps}
-    \caption{Flow chart of motherboard micro controller code}
+    \includegraphics[scale=0.38]{micro.eps}
+    \caption{A flow chart of motherboards micro controller code}
     \label{fig:pic3}
 \end{figure}
 
-\begin{figure}[H]
+In short the program first initializes the radio link and it's communication protocol. The second step is to check and enumerate the number of IMUs that is connected to the motherboard. After initialization the soft ware enters a main loop where each IMU is sampled and the data is packed. If all samples have been taken then the data is transmitted to the host computer and the program goes back to the beginning of the loop and samples data from the IMUs again.    
+
+ 
+\begin{figure}[h!] %% För att H ska funka krävs väl float packetet?
     \centering
-    \includegraphics[scale=0.4]{pi.eps}
+    \includegraphics[scale=0.38]{pi.eps}
     \caption{Flow chart of host computer code}
     \label{fig:pic4}
 \end{figure}
 
+The flow chart of the host computer is a bit more advanced and consists of several steps. The application begins by initializing the radio link and the skeleton structure which creates a bone structure. After the initialization steps the program waits for data from the motherboard and when it is recieved the gyros are calibrated with regards of the gravity vector. The program then recalculates the bones with the gravity data and enters a loop which handles the core functions.
+[HÄR SKA MER IN]
+%HÄR SKA MER IN
 
-\subsection*{schematics}
+\subsection*{Schematics} % Ska vi ha med ngt om ritningarna till svarvade kretskort?
+The hard ware schematics of the system describes how it was constructed and the different components used. To make the system more reliable, robust and efficient the components where mounted on printed circuit boards designed during the course. Figure~\ref{fig:pic5} shows the schematics for the motherboard.
+ 
 
-\begin{figure}[H]
+\begin{figure}[h!] %% Behöver nog kanske krympas lite 
     \centering
-    \includegraphics[scale=0.65]{mb_schematic.pdf}
-    \caption{Motherboard schematic}
+    \includegraphics[scale=0.67]{mb_schematic.pdf}
+    \caption{The Motherboard schematic}
     \label{fig:pic5}
 \end{figure}
 
-\begin{figure}[H]
+\noindent %lat
+The connectors \textit{IMU 0} to \textit{IMU 5} on the motherboard (see Figure~\ref{fig:pic5}) will be connected to the \textit{CONN\_IN} connector on the different IMUs in the system. The IMU design are described by the schematics in Figure~\ref{fig:pic6} below. Note that the IMUs were constructed in a relativly small format which improved mobility but caused difficulties during the construction phase. % sista kanske lite överflödigt   
+ 
+\begin{figure}[h!]%% För att H ska funka krävs väl float packetet?
     \centering
     \includegraphics{imu_schematic.pdf}
     \caption{IMU board schematic}
@@ -96,12 +111,26 @@ Below is a simple block diagram presented which shows the main design of the pro
 
 
 \section*{Data and Performance}
+In this section of the report all the data and results of the project will be presented and evaluated. The measurements made have been focusing on capturing the system's drift over time and ability to correctly detect angles, both in high and low speed.
 
-\begin{figure}[H]
+To collect data samples the system was installed in a simple laboration setup where angles could be read from the motion capturement system and a protractor. By reading values from a camera time could also be captured and measurements could be done in high speed. 
+
+The setup was constructed by office-material found in the sourroundings to the project (see Figure~\ref{fig:pic7}), a folder was just as a hinge/joint and was stabilized by several books. A protractor was taped in line with the joint and made it possible to read angles manually. 
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.27]{croped.jpg}
+    \caption{The laboration setup during data sampling for angles, note that the computer displays data values visible from the camera}
+    \label{fig:pic7}
+\end{figure}
+
+To collect drift data of the system it was mounted on a table (which wasn't used) and then left to run for some time.  
+
+\begin{figure}[h!]
     \centering
     \includegraphics[scale=1.15]{drift.pdf}
     \caption{Stationary IMU drift over time}
-    \label{fig:pic7}
+    \label{fig:pic8}
 \end{figure}
 
 \begin{figure}[H]
@@ -119,7 +148,7 @@ Below is a simple block diagram presented which shows the main design of the pro
 \end{figure}
 
 \section*{Individual reflection and Conclusion}
-TO-DO
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\newpage
