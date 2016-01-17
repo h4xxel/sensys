@@ -55,7 +55,7 @@ This report covers the results of a project in the course Sensor based system (I
 
 %%%%%%%%%%%%%%%%%%%%%
 \subsection*{The application}
-A motion capturement system \cite{wiki} can be used in many applications where real world motions and movements is studied or analysed. The most common usage for a motion capturement system is digital animation in video games and movies where characters are based on a motion capturement system. The application can also be used in physics, medical implementation and sports to collect data for further analysis.
+A motion capturement system \cite{wiki} can be used in many applications where real world motions and movements is studied or analysed. The most common usage for a motion capturement system is digital animation in video games and movies where characters is based on movements from a motion capturement system. The application can also be used in physics, medical implementation and sports to collect data for further analysis.
 
 The technique behind motion capturement and recording motion have only been used for around a decade. Since the technique is rather new there's still much potential for finding new implementations in the field.
  
@@ -67,9 +67,9 @@ The technique behind motion capturement and recording motion have only been used
   
 %%%%%%%%%%%%%%%%%%%%%
 \subsection*{Sensors}
-The system created in this project uses inertial measurement with gyroscopes and accelerometers to capture motions. An IMU (inertial measurement unit) consisting of one accelerometer and one gyro which is attached to every measurement point on the object. The sensors used are MEMS (microelectromechanical systems) sensors which measure acceleration and changes in rotation by measuring the stress in a micro-machined structure.\cite{mems}
+The system created in this project uses inertial measurement with gyroscopes and accelerometers to capture motions. An IMU (inertial measurement unit) consisting of one accelerometer and one gyro is attached to every measurement point on the object. The sensors used are MEMS (microelectromechanical systems) sensors which measure acceleration and changes in rotation by measuring the stress in a micro-machined structure.\cite{mems}
 
-The specific sensors used in the project are the LIS2HH12\cite{accelerometer} accelerometer and the BMG160\cite{gyro} gyro. Both sensors provide a digital I$^2$C interface and 16 bits of resolution.
+The sensors used in the project are the LIS2HH12\cite{accelerometer} accelerometer and the BMG160\cite{gyro} gyro. Both sensors provide a digital I$^2$C interface and 16 bits of resolution.
 
 Other popular ways of doing motion capture include high speed cameras and reflective dots placed on the limbs of the measured object instead of using inertial measurement.\cite{wiki}
 
@@ -78,23 +78,23 @@ In this part of the report all the hardware and software constructed during this
 
 %%%%%%%%%%%%%%%%%%%%%
 \subsection*{Block diagram}
-Below is a simple block diagram presented which shows the main design of the project (see Figure~\ref{fig:pic2}). The picture gives a quick indication of which parts the project will consist of and how they are connected. The figure also shows that the hardware can be divided into three different parts depending on their functionallity and objectives, the parts are IMUs (Inertial Measurement Unit), motherboard and the host computer.     
-
+Below is a simple block diagram presented which shows the main design of the project (see Figure ~\ref{fig:pic2}). The picture also gives a quick indication of which kinds of parts the implementation will need. The figure also shows that the hardware can be divided into three different parts depending on their functionallity and objectives, the parts are IMUs (Inertial Measurement Unit), motherboard and the host computer.     
+ 
 \begin{figure}[h!]
     \centering
     \includegraphics[scale=0.38]{block.pdf}
     \caption{A block diagram showing the most vital parts of the project, note that the different part is physically separeted.}
     \label{fig:pic2}
 \end{figure}
-\newpage
 
+\newpage
 \subsection*{Software}
-The software of this project can be described by the help of two flow charts, one representing the implementation on the motherboard and the other representing the host computer.
+The software of this project can be described by two flow charts, one representing the implementation on the motherboard and the other representing the host computer.
 
 \subsubsection*{Micro controller software}
-Figure~\ref{fig:pic3} shows how the motherboard application works in a comprehensive maner. In short the program first initializes the radio link and it's communication protocol. 
+Figure~\ref{fig:pic3} shows how the motherboard application works in a comprehensive maner. 
 
-The second step is to check and enumerate the number of IMUs that is connected to the motherboard. After initialization the soft ware enters a main loop where each IMU is sampled and the data is packed. If all samples have been taken then the data is transmitted to the host computer and the program goes back to the beginning of the loop and samples data from the IMUs again.    
+In short the program first initializes the radio link and it's communication protocol. The second step is to check and enumerate the number of IMUs that is connected to the motherboard. After initialization the soft ware enters a main loop where each IMU is sampled and the data is packed. If all samples have been taken then the data is transmitted to the host computer and the program goes back to the beginning of the loop and samples data from the IMUs again.    
 
 \begin{figure}[h!]
     \centering
@@ -105,6 +105,7 @@ The second step is to check and enumerate the number of IMUs that is connected t
 
 \subsubsection*{Host computer software}
 Figure~\ref{fig:pic4} illustrates the program flow of the host computer software.
+
 The flow chart of the host computer is a bit more advanced and consists of several steps. The application begins by initializing the radio link and the skeleton structure from a pre-defined set of data points describing the spatial relation of the IMUs. After the initialization steps the program waits for data from the motherboard and when it is recieved the gyros are calibrated with regards of the gravity vector acquired from the accelerometers. The program then recalculates the bone structure, moving joints and rotating the limbs according to the sensor input.
 
 In the main loop of the code, data is first read from the motherboard using the radio link. The relative rotational  from the gyros (angular speed) is integrated with respect to time. To mitigate the effects of gyro drift, the system constantly recalibrates itself. This is achieved by using the gravitational force acting upon the accelerometers as an absolute reference in space. However, since other forces act upon the accelerometer, some filtering is done to get better calibration. The accelerometer data is averaged over several (20) cycles and gravity data points from the accelerometer are only collected if the length of the accelerometer vector is close to 1G and the angular distance between the accelerometer vector and the supposed (calculated using gyros) gravity vector is small.
@@ -152,7 +153,7 @@ The setup was constructed by office-material found in the sourroundings to the p
     \label{fig:pic7}
 \end{figure}
 
-To collect drift data of the system it was mounted on a table (which wasn't used) and then left to run for some time. During the execution data samples of the drift was taken and logged to make sure the drift is captured.     
+To collect drift data of the system it was mounted on a table (which wasn't used) and then left to run for some time.  
 
 \begin{figure}[h!]
     \centering
