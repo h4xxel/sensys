@@ -92,7 +92,7 @@ Below is a simple block diagram presented which shows the main design of the pro
 The software of this project can be described by the help of two flow charts, one representing the implementation on the motherboard and the other representing the host computer.
 
 \subsubsection*{Micro controller software}
-Figure~\ref{fig:pic3} shows how the motherboard application works in a comprehensive maner. In short the program first initializes the radio link and it's communication protocol. 
+Figure~\ref{fig:pic3} shows how the motherboard application works in a comprehensive maner. In short the program first initializes the radio link and its communication protocol. 
 
 The second step is to check and enumerate the number of IMUs that is connected to the motherboard. After initialization the soft ware enters a main loop where each IMU is sampled and the data is packed. If all samples have been taken then the data is transmitted to the host computer and the program goes back to the beginning of the loop and samples data from the IMUs again.    
 
